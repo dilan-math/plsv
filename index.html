@@ -1,6 +1,329 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DILAN - Digital Learning berbasis CPA</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#dbeafe,#eff6ff,#ffffff);
+min-height:100vh;
+}
+
+header{
+padding:50px 20px;
+text-align:center;
+}
+
+.hero{
+max-width:1100px;
+margin:auto;
+background:white;
+padding:35px;
+border-radius:30px;
+box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.hero h3{
+color:#2563eb;
+margin-bottom:10px;
+}
+
+.hero h1{
+font-size:38px;
+color:#1e3a8a;
+margin-bottom:15px;
+}
+
+.hero p{
+line-height:1.8;
+font-size:17px;
+color:#475569;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:40px 20px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:30px;
+}
+
+.card{
+background:white;
+border-radius:25px;
+overflow:hidden;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+transition:.4s;
+}
+
+.card:hover{
+transform:translateY(-10px);
+box-shadow:0 15px 35px rgba(0,0,0,.15);
+}
+
+.preview{
+height:220px;
+overflow:hidden;
+}
+
+.preview img{
+width:100%;
+height:100%;
+object-fit:cover;
+transition:.5s;
+}
+
+.card:hover img{
+transform:scale(1.08);
+}
+
+.content{
+padding:25px;
+}
+
+.badge{
+display:inline-block;
+padding:7px 14px;
+border-radius:30px;
+font-size:12px;
+font-weight:600;
+margin-bottom:15px;
+}
+
+.concrete{
+background:#dcfce7;
+color:#166534;
+}
+
+.pictorial{
+background:#dbeafe;
+color:#1d4ed8;
+}
+
+.abstract{
+background:#ede9fe;
+color:#6d28d9;
+}
+
+.game{
+background:#fee2e2;
+color:#dc2626;
+}
+
+.content h2{
+font-size:22px;
+margin-bottom:10px;
+color:#1e293b;
+}
+
+.content p{
+color:#64748b;
+line-height:1.6;
+margin-bottom:20px;
+}
+
+.btn{
+display:block;
+text-decoration:none;
+text-align:center;
+padding:13px;
+border-radius:12px;
+background:#2563eb;
+color:white;
+font-weight:600;
+transition:.3s;
+}
+
+.btn:hover{
+background:#1d4ed8;
+}
+
+footer{
+background:white;
+padding:18px;
+margin-top:40px;
+text-align:center;
+box-shadow:0 -5px 15px rgba(0,0,0,.05);
+color:#475569;
+font-size:14px;
+}
+
+@media(max-width:768px){
+
+.hero h1{
+font-size:28px;
+}
+
+.preview{
+height:180px;
+}
+
+}
+
+</style>
+</head>
+
 <body>
-<h1>Halo</h1>
+
+<header>
+
+<div class="hero">
+
+<h3>📘 DILAN</h3>
+
+<h1>Digital Learning berbasis CPA</h1>
+
+<p>
+Kumpulan media pembelajaran interaktif berbasis pendekatan 
+<b>Concrete – Pictorial – Abstract (CPA)</b> 
+untuk membantu peserta didik memahami materi 
+<b>Persamaan Linear Satu Variabel (PLSV)</b> secara bertahap mulai dari pengalaman konkret, representasi visual, hingga bentuk abstrak.
+</p>
+
+</div>
+
+</header>
+
+<div class="container">
+
+<div class="grid">
+
+<!-- Timbangan Kelereng -->
+<div class="card">
+
+<div class="preview">
+<img src="https://i.imgur.com/DBmMpuK.png">
+</div>
+
+<div class="content">
+
+<span class="badge concrete">Concrete</span>
+
+<h2>Timbangan Kelereng</h2>
+
+<p>
+Media konkret menggunakan timbangan dan kelereng untuk memahami konsep PLSV.
+</p>
+
+<a class="btn" target="_blank"
+href="https://script.google.com/macros/s/AKfycbyju5VIku3_qIqiw8YcbMeHN1VBdwTapwtQbR3IR2gcNm_bkJLbuiMMxLqZWwBFITp1/exec">
+
+Buka Media
+
+</a>
+
+</div>
+</div>
+
+
+<!-- Timbangan Segitiga -->
+<div class="card">
+
+<div class="preview">
+<img src="https://i.imgur.com/ZFShSBo.png">
+</div>
+
+<div class="content">
+
+<span class="badge pictorial">Pictorial</span>
+
+<h2>Timbangan Segitiga</h2>
+
+<p>
+Media visual menggunakan simbol gambar sebagai jembatan menuju model matematika.
+</p>
+
+<a class="btn" target="_blank"
+href="https://script.google.com/macros/s/AKfycbzzbm8SQBd60cGpaiAjIXpSStSxxtVh9ZPm09zbCZ15-lRUg32cXkJUhxFqoRTnGmQ/exec">
+
+Buka Media
+
+</a>
+
+</div>
+</div>
+
+
+<!-- Balap Jukung -->
+<div class="card">
+
+<div class="preview">
+<img src="https://i.imgur.com/fDdHoc4.png">
+</div>
+
+<div class="content">
+
+<span class="badge abstract">Abstract</span>
+
+<h2>Balap Jukung PLSV</h2>
+
+<p>
+Media abstrak berbasis permainan untuk melatih kemampuan menyelesaikan soal PLSV.
+</p>
+
+<a class="btn" target="_blank"
+href="https://script.google.com/macros/s/AKfycby3ftDNYNyNppTGgyHO5Sp9abdeXNs0-lOYjnj-B14GmN0iwyvJusMxXiR51BlTHEzb/exec">
+
+Buka Media
+
+</a>
+
+</div>
+</div>
+
+
+<!-- Kode Gembok -->
+<div class="card">
+
+<div class="preview">
+<img src="https://i.imgur.com/kpk47dY.png">
+</div>
+
+<div class="content">
+
+<span class="badge game">Game</span>
+
+<h2>Kode Gembok</h2>
+
+<p>
+Permainan interaktif untuk menguji pemahaman konsep PLSV melalui tantangan membuka kode.
+</p>
+
+<a class="btn" target="_blank"
+href="https://script.google.com/macros/s/AKfycbwKGqOIVyRD-0DSm5dlMZ13mUZZMvA7w8THzLdffgPDPIteo9XrHF7qZBIHBMRwb4en/exec">
+
+Buka Media
+
+</a>
+
+</div>
+</div>
+
+</div>
+</div>
+
+<footer>
+
+DILAN • Digital Learning berbasis CPA untuk Persamaan Linear Satu Variabel<br>
+Pembuat: Ahmad Fauzi, S.Pd. — Guru Matematika SMPN 15 Banjarbaru
+
+</footer>
+
 </body>
 </html>
