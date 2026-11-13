@@ -1,527 +1,1398 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelas Misteri & Stik Es Krim - PLSV (CPA)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.16) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(251, 146, 60, 0.14) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+                radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 24px 24px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
 
-<title>Timbangan Budaya Banjar</title>
+        .card-surface {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+        }
 
-<script src="https://cdn.tailwindcss.com"></script>
+        .manipulative-item {
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+        }
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        .manipulative-item:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
 
-body{
-    font-family:'Poppins',sans-serif;
-    background: linear-gradient(160deg,#b3e5fc,#e3f2fd,#ffffff);
-    background-size:200% 200%;
-    animation:gradientMove 8s ease infinite;
-    overflow-x:hidden;
-}
+        .manipulative-item:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
 
-@keyframes gradientMove{
-    0%{background-position:0% 50%;}
-    50%{background-position:100% 50%;}
-    100%{background-position:0% 50%;}
-}
+        .desk-zone {
+            transition: all 0.25s ease;
+            border: 2.5px dashed #cbd5e1;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            box-shadow: inset 0 2px 10px rgba(15, 23, 42, 0.04);
+        }
 
-.weight{
-    cursor:pointer;
-    transition:0.2s;
-    user-select:none;
-}
+        .desk-zone.drag-over {
+            border-color: #0284c7;
+            border-style: solid;
+            background: rgba(224, 242, 254, 0.55);
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.16), inset 0 2px 8px rgba(2, 132, 199, 0.08);
+            transform: scale(1.01);
+        }
 
-.weight:hover{
-    transform:scale(1.08);
-}
+        .btn-press {
+            transition: all 0.15s ease;
+        }
 
-.drop-zone{
-    border:2px dashed #cbd5e1;
-    transition:0.3s;
-}
+        .btn-press:active:not(:disabled) {
+            transform: translateY(2px);
+        }
 
-.fulcrum{
-    position:absolute;
-    bottom:0;
-    left:50%;
-    transform:translateX(-50%);
-}
+        /* Animasi masuk dan keluar benda di meja */
+        @keyframes popEnter {
+            0% { transform: scale(0.3); opacity: 0; }
+            75% { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
-.beam{
-    transform-origin:center bottom;
-    transition:0.5s ease;
-}
+        .anim-enter {
+            animation: popEnter 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
 
-.correct-animation{
-    animation:correct 0.5s ease;
-}
+        @keyframes fadeOutUp {
+            0% { transform: scale(1) translateY(0); opacity: 1; }
+            100% { transform: scale(0.25) translateY(-28px); opacity: 0; }
+        }
 
-@keyframes correct{
-    0%{transform:scale(1);}
-    50%{transform:scale(1.08);}
-    100%{transform:scale(1);}
-}
+        .anim-remove {
+            animation: fadeOutUp 0.34s ease-in forwards;
+            pointer-events: none;
+        }
 
-footer{
-    background:white;
-    color:black;
-    padding:10px;
-    position:fixed;
-    bottom:0;
-    width:100%;
-    text-align:center;
-    box-shadow:0 -4px 10px rgba(0,0,0,0.15);
-}
+        @keyframes shakeBox {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
 
-.token-info{
-    background:linear-gradient(135deg,#dbeafe,#eff6ff);
-    border-left:6px solid #2563eb;
-}
-</style>
+        .anim-shake {
+            animation: shakeBox 0.4s ease-in-out;
+        }
+
+        @keyframes pulseBalanced {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .anim-balanced {
+            animation: pulseBalanced 1.8s infinite ease-in-out;
+        }
+
+        /* Animasi tutup gelas terbuka */
+        .cup-lid-group {
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.45s ease;
+            transform-origin: 18px 22px;
+        }
+
+        .cup-opened .cup-lid-group {
+            transform: translate(-10px, -16px) rotate(-24deg);
+            opacity: 0.25;
+        }
+
+        /* Stik terbang ke gelas saat Buka Semua Gelas */
+        .flying-stick {
+            position: fixed;
+            z-index: 60;
+            pointer-events: none;
+            transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.65s ease;
+        }
+    </style>
 </head>
-
-<body>
-<audio id="backsound" loop>
-  <source src="https://raw.githubusercontent.com/dilan-math/plsv/master/Backsound%20Game.mp3" type="audio/mpeg">
-</audio>
-<!-- FULLSCREEN -->
-<button id="fullscreen-btn"
-class="fixed top-3 right-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded shadow-lg z-50">
-⛶
-</button>
-
-<div class="container mx-auto px-4 py-8 max-w-6xl">
-
-<h1 class="text-3xl font-bold text-center text-black mb-2">
-Timbangan Budaya Banjar
-</h1>
-
-<p class="text-center text-gray-700 mb-2">
-Belajar Persamaan Linear Satu Variabel menggunakan budaya khas Kalimantan Selatan
-</p>
-
-<!-- TIMBANGAN -->
-<div class="bg-white rounded-2xl shadow-xl p-2 mb-8">
-
-<div class="relative h-[280px] mt-[-40px]">
-
-<!-- TUMPUAN -->
-<div class="fulcrum w-[90px] h-[90px] bottom-[50px]">
-<svg viewBox="0 0 100 100">
-<polygon points="0,100 100,100 50,0" fill="#64748b"/>
-</svg>
-</div>
-
-<!-- LENGAN -->
-<div id="beam"
-class="beam absolute bottom-[140px] left-1/2 -translate-x-1/2 w-[95%] h-6 bg-gray-700 rounded-full">
-
-<!-- PAN KIRI -->
-<div class="absolute -top-[75px] left-[10%] -translate-x-1/2">
-
-<div id="left-pan"
-class="drop-zone w-[260px] h-[170px] bg-gray-100 rounded-2xl flex flex-wrap content-start p-3 shadow-md">
-</div>
-
-</div>
-
-<!-- PAN KANAN -->
-<div class="absolute -top-[75px] right-[10%] translate-x-1/2">
-
-<div id="right-pan"
-class="drop-zone w-[260px] h-[170px] bg-gray-100 rounded-2xl flex flex-wrap content-start p-3 shadow-md">
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="text-center mt-6">
-<button id="reset-scale"
-class="bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-2 rounded-lg">
-Reset Timbangan
-</button>
-</div>
-
-</div>
-
-<!-- SOAL -->
-<div class="bg-white rounded-2xl shadow-xl p-6">
-
-<div class="grid md:grid-cols-2 gap-6">
-
-<!-- KOLOM KIRI -->
-<div>
-
-<div class="flex items-center justify-center mb-5 gap-2">
-
-<button id="prev-question"
-class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg font-bold">
-←
-</button>
-
-<div id="question-number"
-class="bg-gray-100 px-4 py-2 rounded-lg font-medium">
-Soal 1/5
-</div>
-
-<button id="next-question"
-class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg font-bold">
-→
-</button>
-
-</div>
-
-<div id="question-display"
-class="text-xl font-semibold text-center py-8 bg-blue-50 rounded-xl">
-1 kantong sasirangan + 3 token bekantan = 7 token bekantan
-</div>
-
-</div>
-
-<!-- KOLOM KANAN -->
-<div class="flex flex-col justify-center">
-
-<div id="culture-info"
-class="token-info rounded-xl p-4 mb-4 text-gray-700 leading-relaxed">
-Bekantan adalah hewan khas Kalimantan yang terkenal dengan hidung panjangnya.
-</div>
-
-<label class="block text-center text-lg font-medium text-gray-700 mb-3">
-Berapa banyak token dalam 1 kantong sasirangan?
-</label>
-
-<div class="flex gap-2">
-
-<input
-type="number"
-id="answer"
-placeholder="Masukkan jawaban"
-class="flex-1 border border-gray-300 rounded-lg py-3 px-4 text-center text-lg">
-
-<button id="check-answer"
-class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 rounded-lg">
-Periksa
-</button>
-
-</div>
-
-<div id="feedback"
-class="hidden mt-5 p-4 rounded-lg text-center font-medium">
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<footer>
-Pembuat: Ahmad Fauzi, S.Pd. - Guru Matematika SMPN 15 Banjarbaru
-</footer>
-
-<script>
-
-document.addEventListener('DOMContentLoaded', function(){
-const backsound = document.getElementById('backsound');
-
-document.body.addEventListener('click', function startMusic() {
-    backsound.volume = 0.3; // volume 30%
-    backsound.play().catch(()=>{});
-    document.body.removeEventListener('click', startMusic);
-}, { once:true });
-const soundBenar = new Audio(
-'https://raw.githubusercontent.com/dilan-math/plsv/master/benar-uzi.wav'
-);
-
-const soundSalah = new Audio(
-'https://raw.githubusercontent.com/dilan-math/plsv/master/salah-uzi.wav'
-);
-
-
-const questions = [
-
-{
-equation:"1 kantong sasirangan + 3 token bekantan = 7 token bekantan",
-answer:4,
-left:["x",1,1,1],
-right:[1,1,1,1,1,1,1],
-token:"https://i.imgur.com/KIChosV.png",
-tokenName:"bekantan",
-description:"Bekantan adalah hewan khas Kalimantan yang terkenal dengan hidung panjangnya dan hidup di kawasan hutan bakau."
-},
-
-{
-equation:"1 kantong sasirangan + 2 token kelotok = 5 token kelotok",
-answer:3,
-left:["x",1,1],
-right:[1,1,1,1,1],
-token:"https://i.imgur.com/X3x3lel.png",
-tokenName:"kelotok",
-description:"Kelotok adalah perahu motor tradisional khas Kalimantan Selatan yang digunakan untuk transportasi sungai."
-},
-
-{
-equation:"1 kantong sasirangan + 4 token sasirangan = 10 token sasirangan",
-answer:6,
-left:["x",1,1,1,1],
-right:[1,1,1,1,1,1,1,1,1,1],
-token:"https://i.imgur.com/xlUxuKR.png",
-tokenName:"sasirangan",
-description:"Sasirangan adalah kain tradisional khas Banjar dengan motif unik dan warna yang indah."
-},
-
-{
-equation:"2 kantong sasirangan = 8 token madihin",
-answer:4,
-left:["x","x"],
-right:[1,1,1,1,1,1,1,1],
-token:"https://i.imgur.com/L3u7Ppm.png",
-tokenName:"madihin",
-description:"Madihin adalah seni pertunjukan khas Banjar berupa syair dan pantun yang diiringi tabuhan rebana."
-},
-
-{
-equation:"1 kantong sasirangan + 5 token pasar terapung = 9 token pasar terapung",
-answer:4,
-left:["x",1,1,1,1,1],
-right:[1,1,1,1,1,1,1,1,1],
-token:"https://i.imgur.com/Qa4wYUF.png",
-tokenName:"pasar terapung",
-description:"Pasar terapung adalah pasar tradisional di atas sungai yang menjadi ikon budaya Kalimantan Selatan."
-}
-
-];
-
-let currentQuestionIndex = 0;
-
-const questionDisplay = document.getElementById('question-display');
-const questionNumber = document.getElementById('question-number');
-const answerInput = document.getElementById('answer');
-const feedback = document.getElementById('feedback');
-
-const leftPan = document.getElementById('left-pan');
-const rightPan = document.getElementById('right-pan');
-
-const beam = document.getElementById('beam');
-
-const cultureInfo = document.getElementById('culture-info');
-
-function createItem(type){
-
-const q = questions[currentQuestionIndex];
-
-const item = document.createElement('img');
-
-if(type === "x"){
-
-item.src = "https://i.imgur.com/iqHKzS9.png";
-
-item.className =
-"weight w-[70px] h-[70px] object-contain m-1";
-
-item.dataset.weight = "x";
-
-}else{
-
-item.src = q.token;
-
-item.className =
-"weight w-[45px] h-[45px] object-contain m-1";
-
-item.dataset.weight = "1";
-
-}
-
-item.onclick = function(){
-
-item.remove();
-
-updateScale();
-
-};
-
-return item;
-
-}
-
-function displayQuestion(){
-
-const q = questions[currentQuestionIndex];
-
-questionDisplay.textContent = q.equation;
-
-cultureInfo.textContent = q.description;
-
-questionNumber.textContent =
-`Soal ${currentQuestionIndex+1}/${questions.length}`;
-
-answerInput.value = "";
-
-feedback.classList.add('hidden');
-
-leftPan.innerHTML = "";
-rightPan.innerHTML = "";
-
-q.left.forEach(item=>{
-
-leftPan.appendChild(createItem(item));
-
-});
-
-q.right.forEach(item=>{
-
-rightPan.appendChild(createItem(item));
-
-});
-
-updateScale();
-
-}
-
-displayQuestion();
-
-document.getElementById('prev-question').onclick = function(){
-
-if(currentQuestionIndex > 0){
-
-currentQuestionIndex--;
-
-displayQuestion();
-
-}
-
-};
-
-document.getElementById('next-question').onclick = function(){
-
-if(currentQuestionIndex < questions.length-1){
-
-currentQuestionIndex++;
-
-displayQuestion();
-
-}
-
-};
-
-document.getElementById('reset-scale').onclick = function(){
-
-displayQuestion();
-
-};
-
-document.getElementById('check-answer').onclick = function(){
-
-const userAnswer = parseInt(answerInput.value);
-
-const correctAnswer = questions[currentQuestionIndex].answer;
-
-feedback.classList.remove('hidden');
-
-if(userAnswer === correctAnswer){
-
-soundBenar.currentTime = 0;
-soundBenar.play();
-
-feedback.textContent =
-"Benar! Isi kantong sasirangan berhasil ditemukan.";
-
-feedback.className =
-"mt-5 p-4 rounded-lg text-center font-medium bg-green-100 text-green-700 correct-animation";
-
-}else{
-
-soundSalah.currentTime = 0;
-soundSalah.play();
-
-feedback.textContent =
-"Jawaban belum tepat. Coba lagi.";
-
-feedback.className =
-"mt-5 p-4 rounded-lg text-center font-medium bg-red-100 text-red-700";
-
-answerInput.value = "";
-
-}
-
-};
-
-function updateScale(){
-
-const leftItems = [...leftPan.children];
-const rightItems = [...rightPan.children];
-
-const currentAnswer = questions[currentQuestionIndex].answer;
-
-let leftValue = 0;
-let rightValue = 0;
-
-leftItems.forEach(item=>{
-
-if(item.dataset.weight === "x"){
-leftValue += currentAnswer;
-}else{
-leftValue += 1;
-}
-
-});
-
-rightItems.forEach(item=>{
-
-if(item.dataset.weight === "x"){
-rightValue += currentAnswer;
-}else{
-rightValue += 1;
-}
-
-});
-
-const diff = leftValue - rightValue;
-
-if(diff === 0){
-
-beam.style.transform =
-'translateX(-50%) rotate(0deg)';
-
-}else{
-
-const angle =
-Math.sign(diff) * Math.min(Math.abs(diff)*3,15);
-
-beam.style.transform =
-`translateX(-50%) rotate(${-angle}deg)`;
-
-}
-
-}
-
-});
-
-document.getElementById("fullscreen-btn")
-.addEventListener("click", function () {
-
-if (!document.fullscreenElement) {
-
-document.documentElement.requestFullscreen();
-
-this.textContent = "🡽";
-
-} else {
-
-document.exitFullscreen();
-
-this.textContent = "⛶";
-
-}
-
-});
-
-</script>
-
+<body class="antialiased selection:bg-sky-100 selection:text-sky-900">
+
+    <!-- Canvas Konfeti Perayaan -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- HEADER APLIKASI -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Judul & Ikon -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/25 shrink-0">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 8h12l-1.2 12.2a2 2 0 01-2 1.8H9.2a2 2 0 01-2-1.8L6 8z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 8h15M9 5h6v3H9V5z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 12.5a1.5 1.5 0 011.5 1.5c0 1-1.5 1.3-1.5 2.2m0 2.3h.01"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                        Gelas Misteri &amp; Stik Es Krim
+                    </h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">
+                        Eksplorasi Persamaan Linear Satu Variabel (Tahap Konkret)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Kontrol Kanan: Musik Latar & Fullscreen -->
+            <div class="flex items-center gap-2 sm:gap-2.5 ml-auto">
+                <button id="bgm-toggle-btn" type="button" title="Nyalakan / Matikan Musik Latar Lembut"
+                    class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/90 text-xs font-bold flex items-center gap-1.5 transition-colors">
+                    <svg id="bgm-icon-off" class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                    </svg>
+                    <svg id="bgm-icon-on" class="w-4 h-4 text-sky-600 hidden" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                    <span id="bgm-label">Musik: Mati</span>
+                </button>
+
+                <button id="fullscreen-btn" type="button" title="Layar Penuh"
+                    class="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 btn-press">
+                    <svg id="icon-fs-enter" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                    </svg>
+                    <svg id="icon-fs-exit" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- KONTEN UTAMA -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+        <!-- 1. PANEL NAVIGASI LEVEL & SOAL CERITA -->
+        <section class="card-surface rounded-3xl p-5 sm:p-6 space-y-4">
+            <!-- Tab Pilihan Level -->
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-2" id="level-tabs">
+                    <button type="button" data-level="0" class="level-tab px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-sky-600 text-white shadow-md shadow-sky-500/25 transition-all">
+                        Level 1: Dasar
+                    </button>
+                    <button type="button" data-level="1" class="level-tab px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+                        Level 2: Menengah
+                    </button>
+                    <button type="button" data-level="2" class="level-tab px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+                        Level 3: Tantangan
+                    </button>
+                    <button type="button" data-level="custom" class="level-tab px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                        </svg>
+                        <span>Mode Bebas (Guru)</span>
+                    </button>
+                </div>
+
+                <!-- Navigasi Sebelumnya / Berikutnya -->
+                <div class="flex items-center gap-1.5 ml-auto">
+                    <button id="prev-level-btn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold text-xs transition-colors">
+                        ← Sebelumnya
+                    </button>
+                    <button id="next-level-btn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold text-xs transition-colors">
+                        Berikutnya →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kartu Soal Cerita (Untuk Level 1, 2, 3) -->
+            <div id="story-card" class="rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/60 to-amber-50/70 border border-sky-200/80 p-4 sm:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                <div class="space-y-1.5 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span id="story-badge" class="px-2.5 py-0.5 rounded-md bg-sky-600 text-white text-xs font-extrabold uppercase tracking-wider">
+                            Level 1 • Dasar
+                        </span>
+                        <span class="text-xs font-semibold text-sky-900 bg-white/90 px-2.5 py-0.5 rounded-md border border-sky-200">
+                            Gelas Misteri berisi stik es krim &amp; Stik Es Krim satuan
+                        </span>
+                    </div>
+                    <p id="story-text" class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed">
+                        “Dina memiliki 1 gelas misteri berisi stik es krim dan 5 batang stik es krim di luar gelas. Jika seluruh stik es krim Dina berjumlah 7 batang, berapa isi stik es krim di dalam 1 gelas misteri?”
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0 w-full lg:w-auto">
+                    <button id="reset-left-desk-btn" type="button"
+                        class="flex-1 lg:flex-none px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 btn-press flex items-center justify-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span>Kosongkan Meja Kiri</span>
+                    </button>
+                    <button id="auto-model-btn" type="button"
+                        class="flex-1 lg:flex-none px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-sky-600/20 btn-press flex items-center justify-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span>Susun Model Penuh (Bantuan)</span>
+                    </button>
+                    <button id="clear-desks-btn" type="button"
+                        class="px-3.5 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 font-bold text-xs sm:text-sm btn-press">
+                        Kosongkan Semua
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel Pengaturan Mode Bebas (Khusus Guru) -->
+            <div id="custom-mode-panel" class="hidden rounded-2xl bg-amber-50/90 border border-amber-200 p-4 sm:p-5 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-extrabold text-amber-950">Mode Bebas / Buat Soal Sendiri (Guru)</h3>
+                        <p class="text-xs text-amber-800">Atur target Gelas Misteri &amp; Stik Es Krim. Meja Kiri dapat dikosongkan agar siswa yang menyusunnya.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="apply-custom-right-only-btn" type="button"
+                            class="px-3.5 py-2 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs sm:text-sm btn-press">
+                            Meja Kiri Kosong (Siswa Susun)
+                        </button>
+                        <button id="apply-custom-btn" type="button"
+                            class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow btn-press">
+                            Terapkan Kedua Meja
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 bg-white/80 p-3.5 rounded-2xl border border-amber-200/80">
+                    <div>
+                        <label for="custom-left-cups" class="block text-[11px] font-bold text-slate-600 mb-1">Gelas Kiri</label>
+                        <input type="number" id="custom-left-cups" min="0" max="8" value="2"
+                            class="w-full px-3 py-1.5 rounded-xl border border-slate-300 font-bold text-sm text-slate-800 bg-white">
+                    </div>
+                    <div>
+                        <label for="custom-left-sticks" class="block text-[11px] font-bold text-slate-600 mb-1">Stik Kiri</label>
+                        <input type="number" id="custom-left-sticks" min="0" max="15" value="1"
+                            class="w-full px-3 py-1.5 rounded-xl border border-slate-300 font-bold text-sm text-slate-800 bg-white">
+                    </div>
+                    <div>
+                        <label for="custom-right-cups" class="block text-[11px] font-bold text-slate-600 mb-1">Gelas Kanan</label>
+                        <input type="number" id="custom-right-cups" min="0" max="8" value="0"
+                            class="w-full px-3 py-1.5 rounded-xl border border-slate-300 font-bold text-sm text-slate-800 bg-white">
+                    </div>
+                    <div>
+                        <label for="custom-right-sticks" class="block text-[11px] font-bold text-slate-600 mb-1">Stik Kanan</label>
+                        <input type="number" id="custom-right-sticks" min="0" max="15" value="7"
+                            class="w-full px-3 py-1.5 rounded-xl border border-slate-300 font-bold text-sm text-slate-800 bg-white">
+                    </div>
+                    <div class="col-span-2 sm:col-span-1">
+                        <label for="custom-secret-value" class="block text-[11px] font-bold text-amber-800 mb-1">Isi 1 Gelas</label>
+                        <input type="number" id="custom-secret-value" min="1" max="20" value="3"
+                            class="w-full px-3 py-1.5 rounded-xl border-2 border-amber-400 font-extrabold text-sm text-amber-900 bg-amber-50">
+                    </div>
+                </div>
+
+                <p id="custom-balance-note" class="text-xs font-bold text-emerald-800">
+                    ✓ Seimbang: Total isi Meja Kiri = 7 stik es krim, Meja Kanan = 7 stik es krim (Isi 1 gelas = 3 stik).
+                </p>
+            </div>
+        </section>
+
+        <!-- 2. PANEL RAK ALAT -->
+        <section class="card-surface rounded-3xl p-4 sm:p-5">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <span class="inline-block px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 text-[11px] font-extrabold uppercase tracking-wider mb-1">
+                        Rak Alat Manipulatif
+                    </span>
+                    <p class="text-xs text-slate-500">
+                        Seret objek ke <b>Meja Kiri</b> atau <b>Meja Kanan</b>, atau klik tombol <b>+ Kiri</b> / <b>+ Kanan</b>. Klik objek di meja untuk menghapusnya.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                    <!-- Alat 1: Gelas Misteri (?) -->
+                    <div class="flex items-center gap-3 bg-sky-50/90 px-3.5 py-2.5 rounded-2xl border border-sky-200 shadow-sm">
+                        <div class="manipulative-item shrink-0" draggable="true" data-item="cup" title="Seret Gelas Misteri (?) ke Meja">
+                            <svg class="w-14 h-16" viewBox="0 0 72 84" fill="none">
+                                <!-- Tutup gelas -->
+                                <rect x="11" y="12" width="50" height="10" rx="5" fill="#fb923c" stroke="#c2410c" stroke-width="2.2"/>
+                                <path d="M25 12V8a3 3 0 013-3h16a3 3 0 013 3v4" fill="#fdba74" stroke="#c2410c" stroke-width="2"/>
+                                <!-- Badan gelas plastik -->
+                                <path d="M15 22h42l-5.5 52a5 5 0 01-5 4.5H25.5a5 5 0 01-5-4.5L15 22z" fill="url(#cupGradTool)" stroke="#0284c7" stroke-width="2.4"/>
+                                <!-- Kilau & garis tekstur -->
+                                <path d="M23 27l3 44" stroke="rgba(255,255,255,0.75)" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M36 27v46" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-dasharray="3 3"/>
+                                <!-- Lencana tanda tanya -->
+                                <circle cx="36" cy="50" r="14" fill="#ea580c" stroke="#ffedd5" stroke-width="2"/>
+                                <text x="36" y="56" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="800" font-family="Plus Jakarta Sans, sans-serif">?</text>
+                                <defs>
+                                    <linearGradient id="cupGradTool" x1="15" y1="22" x2="57" y2="78" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#e0f2fe"/>
+                                        <stop offset="55%" stop-color="#bae6fd"/>
+                                        <stop offset="100%" stop-color="#7dd3fc"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800">Gelas Misteri (?)</div>
+                            <div class="text-[11px] text-slate-500 mb-1.5">Berisi stik es krim sama banyak</div>
+                            <div class="flex gap-1.5">
+                                <button type="button" data-add-item="cup" data-side="left" class="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs btn-press">+ Kiri</button>
+                                <button type="button" data-add-item="cup" data-side="right" class="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs btn-press">+ Kanan</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alat 2: Stik Es Krim -->
+                    <div class="flex items-center gap-3 bg-amber-50/90 px-3.5 py-2.5 rounded-2xl border border-amber-200 shadow-sm">
+                        <div class="manipulative-item shrink-0" draggable="true" data-item="stick" title="Seret Stik Es Krim ke Meja">
+                            <svg class="w-10 h-16" viewBox="0 0 36 84" fill="none">
+                                <rect x="9" y="6" width="18" height="72" rx="9" fill="url(#stickGradTool)" stroke="#b47b38" stroke-width="2.2"/>
+                                <path d="M18 17v50" stroke="#b47b38" stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round"/>
+                                <path d="M13 13v12" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round"/>
+                                <defs>
+                                    <linearGradient id="stickGradTool" x1="9" y1="6" x2="27" y2="78" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#f8e3be"/>
+                                        <stop offset="55%" stop-color="#e5b574"/>
+                                        <stop offset="100%" stop-color="#ca914a"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800">Stik Es Krim</div>
+                            <div class="text-[11px] text-slate-500 mb-1.5">1 batang stik es krim satuan</div>
+                            <div class="flex gap-1.5">
+                                <button type="button" data-add-item="stick" data-side="left" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs btn-press">+ Kiri</button>
+                                <button type="button" data-add-item="stick" data-side="right" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs btn-press">+ Kanan</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. AREA KERJA DUA MEJA (MEJA KIRI = MEJA KANAN) & AKSI AMBIL ADIL / BUKA GELAS -->
+        <section class="card-surface rounded-3xl p-5 sm:p-6 space-y-5">
+            <!-- Status Keseimbangan Atas -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200/80">
+                <h2 class="text-base sm:text-lg font-extrabold text-slate-800">Area Eksplorasi Dua Meja</h2>
+                <div id="balance-pill" class="px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="balance-pill-text">Kedua Meja Sama Banyak (=)</span>
+                </div>
+            </div>
+
+            <!-- Grid Meja Kiri | Tanda = | Meja Kanan -->
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-stretch">
+                
+                <!-- MEJA KIRI -->
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-700">Meja Kiri</span>
+                        <span class="text-[11px] font-semibold text-slate-400">Klik benda untuk menghapus</span>
+                    </div>
+                    <div id="left-desk" class="desk-zone flex-1 min-h-[210px] sm:min-h-[240px] rounded-2xl p-3.5 flex flex-wrap content-start items-end gap-2.5 relative">
+                        <div id="left-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-sky-700/80 text-xs sm:text-sm font-semibold pointer-events-none p-5 text-center gap-1.5">
+                            <span class="px-2.5 py-1 rounded-full bg-sky-100/90 text-sky-800 text-[11px] font-extrabold uppercase tracking-wide">Giliranmu Menyusun!</span>
+                            <span>Baca soal cerita di atas, lalu seret atau klik <b>+ Kiri</b> dari Rak Alat untuk mengisi Meja Kiri.</span>
+                        </div>
+                    </div>
+                    <div class="mt-2.5 px-3.5 py-2.5 rounded-xl bg-slate-100/95 border border-slate-200 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500">Isi Meja Kiri:</span>
+                        <span id="left-counter-text" class="text-xs sm:text-sm font-extrabold text-slate-800">0 Gelas Misteri &amp; 0 Stik Es Krim</span>
+                    </div>
+                </div>
+
+                <!-- PEMISAH TANDA SAMA DENGAN "=" BESAR DI TENGAH -->
+                <div class="flex md:flex-col items-center justify-center py-1 md:py-0">
+                    <div id="center-equal-sign" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500 text-white leading-none flex items-center justify-center shadow-lg shadow-emerald-500/30 border-2 border-emerald-300 transition-all duration-300 anim-balanced">
+                        <svg class="w-7 h-7 sm:w-8 sm:h-8 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
+                            <line x1="5" y1="9" x2="19" y2="9"/>
+                            <line x1="5" y1="15" x2="19" y2="15"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- MEJA KANAN -->
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-700">Meja Kanan</span>
+                        <span class="text-[11px] font-semibold text-slate-400">Klik benda untuk menghapus</span>
+                    </div>
+                    <div id="right-desk" class="desk-zone flex-1 min-h-[210px] sm:min-h-[240px] rounded-2xl p-3.5 flex flex-wrap content-start items-end gap-2.5 relative">
+                        <div id="right-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-sky-700/80 text-xs sm:text-sm font-semibold pointer-events-none p-5 text-center gap-1.5">
+                            <span class="px-2.5 py-1 rounded-full bg-sky-100/90 text-sky-800 text-[11px] font-extrabold uppercase tracking-wide">Giliranmu Menyusun!</span>
+                            <span>Seret atau klik <b>+ Kanan</b> dari Rak Alat untuk mengisi Meja Kanan sesuai soal.</span>
+                        </div>
+                    </div>
+                    <div class="mt-2.5 px-3.5 py-2.5 rounded-xl bg-slate-100/95 border border-slate-200 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500">Isi Meja Kanan:</span>
+                        <span id="right-counter-text" class="text-xs sm:text-sm font-extrabold text-slate-800">0 Gelas Misteri &amp; 0 Stik Es Krim</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- PANEL AKSI MANIPULATIF: AMBIL ADIL & BUKA SEMUA GELAS -->
+            <div class="pt-2 border-t border-slate-200/80">
+                <div class="flex items-center justify-between mb-2.5">
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500">Langkah Penyederhanaan Adil &amp; Pembagian:</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <!-- Ambil Adil 1 Stik -->
+                    <button id="fair-remove-stick-btn" type="button" disabled
+                        class="btn-press px-4 py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed text-amber-900 border border-amber-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all">
+                        <span class="px-2 py-0.5 rounded-md bg-amber-500 text-white text-xs font-extrabold shrink-0">Ambil Adil</span>
+                        <span>Ambil 1 Stik dari Kedua Meja</span>
+                    </button>
+
+                    <!-- Ambil Adil 1 Gelas -->
+                    <button id="fair-remove-cup-btn" type="button" disabled
+                        class="btn-press px-4 py-3 rounded-2xl bg-sky-50 hover:bg-sky-100 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed text-sky-900 border border-sky-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all">
+                        <span class="px-2 py-0.5 rounded-md bg-sky-600 text-white text-xs font-extrabold shrink-0">Ambil Adil</span>
+                        <span>Ambil 1 Gelas dari Kedua Meja</span>
+                    </button>
+
+                    <!-- Buka Semua Gelas (Animasi Pembagian Stik Rata ke Gelas) -->
+                    <button id="open-cups-btn" type="button" disabled
+                        class="btn-press px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-slate-100 disabled:to-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:shadow-none disabled:cursor-not-allowed text-white border border-emerald-500 font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span id="open-cups-btn-text">Buka Semua Gelas</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. PANEL KESIMPULAN & VALIDASI JAWABAN AKHIR -->
+        <section class="card-surface rounded-3xl p-5 sm:p-6">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 text-base sm:text-lg font-extrabold text-slate-800">
+                    <span>Jadi, isi 1 gelas misteri adalah</span>
+                    <input type="number" id="final-answer-input" min="0" max="99" placeholder="..."
+                        class="w-24 px-3 py-2 text-center rounded-2xl border-2 border-indigo-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 outline-none font-extrabold text-xl text-indigo-900 bg-white shadow-inner">
+                    <span>batang stik es krim.</span>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-2.5 w-full lg:w-auto">
+                    <!-- Tombol Angka Cepat 1-6 untuk Tablet/IFP -->
+                    <div class="flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                        <button type="button" data-numpad="1" class="w-9 h-9 rounded-xl bg-white hover:bg-indigo-50 font-extrabold text-slate-700 text-sm shadow-sm">1</button>
+                        <button type="button" data-numpad="2" class="w-9 h-9 rounded-xl bg-white hover:bg-indigo-50 font-extrabold text-slate-700 text-sm shadow-sm">2</button>
+                        <button type="button" data-numpad="3" class="w-9 h-9 rounded-xl bg-white hover:bg-indigo-50 font-extrabold text-slate-700 text-sm shadow-sm">3</button>
+                        <button type="button" data-numpad="4" class="w-9 h-9 rounded-xl bg-white hover:bg-indigo-50 font-extrabold text-slate-700 text-sm shadow-sm">4</button>
+                        <button type="button" data-numpad="5" class="w-9 h-9 rounded-xl bg-white hover:bg-indigo-50 font-extrabold text-slate-700 text-sm shadow-sm">5</button>
+                        <button type="button" data-numpad="6" class="w-9 h-9 rounded-xl bg-white hover:bg-indigo-50 font-extrabold text-slate-700 text-sm shadow-sm">6</button>
+                    </div>
+
+                    <button id="check-answer-btn" type="button"
+                        class="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-indigo-600/25 btn-press flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Cek Jawaban</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Banner Umpan Balik Edukatif -->
+            <div id="feedback-banner" class="hidden mt-4 p-4 rounded-2xl border text-sm sm:text-base font-semibold flex items-start gap-3">
+                <!-- Diisi dinamis lewat JavaScript -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto bg-white/85 backdrop-blur-md border-t border-slate-200/80 py-3.5 px-4 text-center">
+        <p class="text-xs sm:text-sm font-medium text-slate-600">
+            Media Pembelajaran Matematika SMP • Pendekatan CPA (Tahap Konkret)
+        </p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            /* =========================================================================
+               1. WEB AUDIO API (MUSIK LATAR LEMBUT & EFEK SUARA TANPA FILE EKSTERNAL)
+               ========================================================================= */
+            let audioCtx = null;
+            let bgmInterval = null;
+            let bgmPlaying = false;
+
+            function ensureAudioContext() {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContextClass();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            function playTone(freq, duration, type, volume, delay) {
+                try {
+                    ensureAudioContext();
+                    const startTime = audioCtx.currentTime + (delay || 0);
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, startTime);
+
+                    gain.gain.setValueAtTime(0.0001, startTime);
+                    gain.gain.exponentialRampToValueAtTime(volume || 0.08, startTime + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + duration + 0.02);
+                } catch (err) {
+                    /* Abaikan jika browser memblokir audio sebelum interaksi */
+                }
+            }
+
+            function sfxPop() {
+                playTone(520, 0.09, 'sine', 0.07, 0);
+            }
+
+            function sfxRemove() {
+                playTone(340, 0.12, 'triangle', 0.06, 0);
+            }
+
+            function sfxSuccess() {
+                playTone(523.25, 0.16, 'triangle', 0.11, 0);
+                playTone(659.25, 0.16, 'triangle', 0.11, 0.12);
+                playTone(783.99, 0.18, 'triangle', 0.11, 0.24);
+                playTone(1046.5, 0.35, 'triangle', 0.13, 0.36);
+            }
+
+            function sfxGentleError() {
+                playTone(280, 0.18, 'sine', 0.08, 0);
+                playTone(235, 0.24, 'sine', 0.08, 0.15);
+            }
+
+            const bgmToggleBtn = document.getElementById('bgm-toggle-btn');
+            const bgmIconOff = document.getElementById('bgm-icon-off');
+            const bgmIconOn = document.getElementById('bgm-icon-on');
+            const bgmLabel = document.getElementById('bgm-label');
+
+            function toggleBgm() {
+                ensureAudioContext();
+                if (bgmPlaying) {
+                    clearInterval(bgmInterval);
+                    bgmInterval = null;
+                    bgmPlaying = false;
+                    bgmIconOff.classList.remove('hidden');
+                    bgmIconOn.classList.add('hidden');
+                    bgmLabel.textContent = 'Musik: Mati';
+                    bgmToggleBtn.classList.remove('bg-sky-50', 'border-sky-300', 'text-sky-800');
+                } else {
+                    const notes = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 392.00];
+                    let step = 0;
+                    bgmPlaying = true;
+                    bgmIconOff.classList.add('hidden');
+                    bgmIconOn.classList.remove('hidden');
+                    bgmLabel.textContent = 'Musik: Aktif';
+                    bgmToggleBtn.classList.add('bg-sky-50', 'border-sky-300', 'text-sky-800');
+
+                    bgmInterval = setInterval(function() {
+                        if (!bgmPlaying) return;
+                        playTone(notes[step % notes.length], 0.45, 'sine', 0.025, 0);
+                        step++;
+                    }, 520);
+                }
+            }
+
+            bgmToggleBtn.addEventListener('click', toggleBgm);
+
+            /* =========================================================================
+               2. BANK SOAL CERITA KONTEKSTUAL (TANPA HURUF ALJABAR)
+               ========================================================================= */
+            const storyLevels = [
+                {
+                    badge: "Level 1 • Dasar (Penjumlahan)",
+                    text: "“Dina memiliki 1 gelas misteri berisi stik es krim dan 5 batang stik es krim di luar gelas. Jika seluruh stik es krim Dina berjumlah 7 batang, berapa isi stik es krim di dalam 1 gelas misteri?”",
+                    model: { leftCups: 1, leftSticks: 5, rightCups: 0, rightSticks: 7 },
+                    secretAnswer: 2
+                },
+                {
+                    badge: "Level 2 • Menengah (Kedua Sisi)",
+                    text: "“Raka memiliki 2 gelas misteri berisi stik es krim dan 2 batang stik es krim di luar gelas. Sinta memiliki 1 gelas misteri berisi stik es krim dan 6 batang stik es krim di luar gelas. Jika jumlah seluruh stik es krim Raka dan Sinta sama banyak, berapa isi 1 gelas misteri?”",
+                    model: { leftCups: 2, leftSticks: 2, rightCups: 1, rightSticks: 6 },
+                    secretAnswer: 4
+                },
+                {
+                    badge: "Level 3 • Tantangan (Perkalian)",
+                    text: "“Ibu menyiapkan 3 gelas misteri yang masing-masing berisi stik es krim sama banyak tanpa ada stik es krim di luar gelas. Jika seluruh stik es krim di ketiga gelas tersebut berjumlah 9 batang, berapa isi 1 gelas misteri?”",
+                    model: { leftCups: 3, leftSticks: 0, rightCups: 0, rightSticks: 9 },
+                    secretAnswer: 3
+                }
+            ];
+
+            let activeLevel = 0; /* 0, 1, 2, atau 'custom' */
+            let cupsOpenedState = false;
+
+            /* =========================================================================
+               3. REFERENSI ELEMEN DOM
+               ========================================================================= */
+            const levelTabs = document.querySelectorAll('.level-tab');
+            const prevLevelBtn = document.getElementById('prev-level-btn');
+            const nextLevelBtn = document.getElementById('next-level-btn');
+            const storyCard = document.getElementById('story-card');
+            const storyBadge = document.getElementById('story-badge');
+            const storyText = document.getElementById('story-text');
+            const resetLeftDeskBtn = document.getElementById('reset-left-desk-btn');
+            const autoModelBtn = document.getElementById('auto-model-btn');
+            const clearDesksBtn = document.getElementById('clear-desks-btn');
+
+            const customModePanel = document.getElementById('custom-mode-panel');
+            const customLeftCupsInput = document.getElementById('custom-left-cups');
+            const customLeftSticksInput = document.getElementById('custom-left-sticks');
+            const customRightCupsInput = document.getElementById('custom-right-cups');
+            const customRightSticksInput = document.getElementById('custom-right-sticks');
+            const customSecretValueInput = document.getElementById('custom-secret-value');
+            const customBalanceNote = document.getElementById('custom-balance-note');
+            const applyCustomRightOnlyBtn = document.getElementById('apply-custom-right-only-btn');
+            const applyCustomBtn = document.getElementById('apply-custom-btn');
+
+            const leftDesk = document.getElementById('left-desk');
+            const rightDesk = document.getElementById('right-desk');
+            const leftPlaceholder = document.getElementById('left-placeholder');
+            const rightPlaceholder = document.getElementById('right-placeholder');
+            const leftCounterText = document.getElementById('left-counter-text');
+            const rightCounterText = document.getElementById('right-counter-text');
+            const centerEqualSign = document.getElementById('center-equal-sign');
+            const balancePill = document.getElementById('balance-pill');
+            const balancePillText = document.getElementById('balance-pill-text');
+
+            const fairRemoveStickBtn = document.getElementById('fair-remove-stick-btn');
+            const fairRemoveCupBtn = document.getElementById('fair-remove-cup-btn');
+            const openCupsBtn = document.getElementById('open-cups-btn');
+            const openCupsBtnText = document.getElementById('open-cups-btn-text');
+
+            const finalAnswerInput = document.getElementById('final-answer-input');
+            const checkAnswerBtn = document.getElementById('check-answer-btn');
+            const feedbackBanner = document.getElementById('feedback-banner');
+
+            /* =========================================================================
+               4. HELPER NILAI RAHASIA & PENGATURAN LEVEL
+               ========================================================================= */
+            function getCurrentSecretValue() {
+                if (activeLevel === 'custom') {
+                    return Math.max(1, parseInt(customSecretValueInput.value, 10) || 1);
+                }
+                return storyLevels[activeLevel].secretAnswer;
+            }
+
+            function selectLevel(levelKey) {
+                activeLevel = levelKey;
+                cupsOpenedState = false;
+                finalAnswerInput.value = '';
+                feedbackBanner.classList.add('hidden');
+
+                levelTabs.forEach(function(tab) {
+                    const isMatch = String(tab.dataset.level) === String(levelKey);
+                    if (levelKey === 'custom' && tab.dataset.level === 'custom') {
+                        tab.className = "level-tab px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-amber-600 text-white shadow-md shadow-amber-500/25 transition-all flex items-center gap-1.5";
+                    } else if (tab.dataset.level === 'custom') {
+                        tab.className = "level-tab px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all flex items-center gap-1.5";
+                    } else if (isMatch) {
+                        tab.className = "level-tab px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-sky-600 text-white shadow-md shadow-sky-500/25 transition-all";
+                    } else {
+                        tab.className = "level-tab px-4 py-2 rounded-xl font-bold text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all";
+                    }
+                });
+
+                if (levelKey === 'custom') {
+                    storyCard.classList.add('hidden');
+                    customModePanel.classList.remove('hidden');
+                    prevLevelBtn.disabled = true;
+                    nextLevelBtn.disabled = true;
+                    updateCustomNote(false);
+                    applyCustomModelToDesks(true);
+                } else {
+                    storyCard.classList.remove('hidden');
+                    customModePanel.classList.add('hidden');
+                    const data = storyLevels[levelKey];
+                    storyBadge.textContent = data.badge;
+                    storyText.textContent = data.text;
+                    prevLevelBtn.disabled = levelKey === 0;
+                    nextLevelBtn.disabled = levelKey === storyLevels.length - 1;
+                    /* Level 1: Meja kiri kosong & meja kanan terisi; Level 2 & 3: Kedua meja kosong */
+                    if (levelKey === 0) {
+                        loadRightOnlyToDesks(data.model);
+                    } else {
+                        clearAllDesks();
+                    }
+                }
+            }
+
+            levelTabs.forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    const val = tab.dataset.level === 'custom' ? 'custom' : parseInt(tab.dataset.level, 10);
+                    selectLevel(val);
+                });
+            });
+
+            prevLevelBtn.addEventListener('click', function() {
+                if (typeof activeLevel === 'number' && activeLevel > 0) {
+                    selectLevel(activeLevel - 1);
+                }
+            });
+
+            nextLevelBtn.addEventListener('click', function() {
+                if (typeof activeLevel === 'number' && activeLevel < storyLevels.length - 1) {
+                    selectLevel(activeLevel + 1);
+                }
+            });
+
+            /* =========================================================================
+               5. LOGIKA MODE BEBAS (GURU)
+               ========================================================================= */
+            function updateCustomNote(autoComputeSecret) {
+                const lC = Math.max(0, parseInt(customLeftCupsInput.value, 10) || 0);
+                const lS = Math.max(0, parseInt(customLeftSticksInput.value, 10) || 0);
+                const rC = Math.max(0, parseInt(customRightCupsInput.value, 10) || 0);
+                const rS = Math.max(0, parseInt(customRightSticksInput.value, 10) || 0);
+
+                const diffCups = lC - rC;
+                const diffSticks = rS - lS;
+
+                if (autoComputeSecret && diffCups !== 0 && diffSticks % diffCups === 0) {
+                    const computed = diffSticks / diffCups;
+                    if (computed >= 1 && computed <= 20) {
+                        customSecretValueInput.value = computed;
+                    }
+                }
+
+                const sec = Math.max(1, parseInt(customSecretValueInput.value, 10) || 1);
+                const totalL = (lC * sec) + lS;
+                const totalR = (rC * sec) + rS;
+
+                if (totalL === totalR) {
+                    customBalanceNote.className = "text-xs font-bold text-emerald-800";
+                    customBalanceNote.textContent = "✓ Seimbang: Total isi Meja Kiri = " + totalL + " stik es krim, Meja Kanan = " + totalR + " stik es krim (Isi 1 gelas = " + sec + " stik).";
+                } else {
+                    customBalanceNote.className = "text-xs font-bold text-amber-800";
+                    customBalanceNote.textContent = "Catatan: Total Meja Kiri = " + totalL + " stik, sedangkan Meja Kanan = " + totalR + " stik (Belum seimbang).";
+                }
+            }
+
+            [customLeftCupsInput, customLeftSticksInput, customRightCupsInput, customRightSticksInput].forEach(function(inp) {
+                inp.addEventListener('input', function() {
+                    updateCustomNote(true);
+                });
+            });
+
+            customSecretValueInput.addEventListener('input', function() {
+                updateCustomNote(false);
+            });
+
+            function applyCustomModelToDesks(leftEmpty) {
+                const model = {
+                    leftCups: leftEmpty ? 0 : Math.min(8, Math.max(0, parseInt(customLeftCupsInput.value, 10) || 0)),
+                    leftSticks: leftEmpty ? 0 : Math.min(15, Math.max(0, parseInt(customLeftSticksInput.value, 10) || 0)),
+                    rightCups: Math.min(8, Math.max(0, parseInt(customRightCupsInput.value, 10) || 0)),
+                    rightSticks: Math.min(15, Math.max(0, parseInt(customRightSticksInput.value, 10) || 0))
+                };
+                loadModelToDesks(model);
+            }
+
+            applyCustomRightOnlyBtn.addEventListener('click', function() {
+                cupsOpenedState = false;
+                finalAnswerInput.value = '';
+                feedbackBanner.classList.add('hidden');
+                applyCustomModelToDesks(true);
+                sfxPop();
+            });
+
+            applyCustomBtn.addEventListener('click', function() {
+                cupsOpenedState = false;
+                finalAnswerInput.value = '';
+                feedbackBanner.classList.add('hidden');
+                applyCustomModelToDesks(false);
+                sfxPop();
+            });
+
+            /* =========================================================================
+               6. PEMBUATAN & MANIPULASI OBJEK SVG DI MEJA KIRI & KANAN
+               ========================================================================= */
+            function createCupSVG(openedCount) {
+                const isOpened = typeof openedCount === 'number' && openedCount > 0;
+                let insideSticksSVG = '';
+
+                if (isOpened) {
+                    const countToDraw = Math.min(openedCount, 8);
+                    const totalWidth = (countToDraw - 1) * 5;
+                    const startX = 36 - (totalWidth / 2);
+                    for (let i = 0; i < countToDraw; i++) {
+                        const xPos = startX + (i * 5) - 2;
+                        insideSticksSVG += '<rect x="' + xPos + '" y="30" width="4" height="42" rx="2" fill="#f59e0b" stroke="#92400e" stroke-width="0.9"/>';
+                    }
+                    insideSticksSVG += '<rect x="18" y="54" width="36" height="16" rx="6" fill="#047857" stroke="#a7f3d0" stroke-width="1.2"/>';
+                    insideSticksSVG += '<text x="36" y="65" text-anchor="middle" fill="#ffffff" font-size="9.5" font-weight="800" font-family="Plus Jakarta Sans, sans-serif">Isi: ' + openedCount + '</text>';
+                } else {
+                    insideSticksSVG += '<circle cx="36" cy="50" r="14" fill="#ea580c" stroke="#ffedd5" stroke-width="2"/>';
+                    insideSticksSVG += '<text x="36" y="56" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="800" font-family="Plus Jakarta Sans, sans-serif">?</text>';
+                }
+
+                return (
+                    '<svg class="w-16 h-20 pointer-events-none" viewBox="0 0 72 84" fill="none">' +
+                        '<g class="cup-lid-group">' +
+                            '<rect x="11" y="12" width="50" height="10" rx="5" fill="#fb923c" stroke="#c2410c" stroke-width="2.2"/>' +
+                            '<path d="M25 12V8a3 3 0 013-3h16a3 3 0 013 3v4" fill="#fdba74" stroke="#c2410c" stroke-width="2"/>' +
+                        '</g>' +
+                        '<path d="M15 22h42l-5.5 52a5 5 0 01-5 4.5H25.5a5 5 0 01-5-4.5L15 22z" fill="rgba(186, 230, 253, 0.72)" stroke="#0284c7" stroke-width="2.4"/>' +
+                        '<path d="M23 27l3 44" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-linecap="round"/>' +
+                        insideSticksSVG +
+                    '</svg>'
+                );
+            }
+
+            function createStickSVG() {
+                return (
+                    '<svg class="w-7 h-16 pointer-events-none" viewBox="0 0 36 84" fill="none">' +
+                        '<rect x="9" y="6" width="18" height="72" rx="9" fill="#e8ba7a" stroke="#b47b38" stroke-width="2.2"/>' +
+                        '<path d="M18 17v50" stroke="#b47b38" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>' +
+                        '<path d="M13 13v12" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round"/>' +
+                    '</svg>'
+                );
+            }
+
+            function addObjectToDesk(deskEl, itemType, playSound) {
+                const currentCount = deskEl.querySelectorAll('.desk-object:not(.anim-remove)').length;
+                if (currentCount >= 22) return;
+
+                if (cupsOpenedState) {
+                    cupsOpenedState = false;
+                }
+
+                const wrapper = document.createElement('div');
+                wrapper.dataset.item = itemType;
+                wrapper.title = "Klik untuk menghapus objek ini dari meja";
+                wrapper.className = "desk-object manipulative-item anim-enter cursor-pointer flex flex-col items-center justify-end";
+
+                if (itemType === 'cup') {
+                    wrapper.innerHTML = createCupSVG(null);
+                } else {
+                    wrapper.innerHTML = createStickSVG();
+                }
+
+                wrapper.addEventListener('click', function() {
+                    if (wrapper.classList.contains('anim-remove')) return;
+                    if (cupsOpenedState) return;
+                    sfxRemove();
+                    wrapper.classList.add('anim-remove');
+                    setTimeout(function() {
+                        wrapper.remove();
+                        updateDeskStatus();
+                    }, 310);
+                });
+
+                deskEl.appendChild(wrapper);
+                if (playSound) sfxPop();
+                updateDeskStatus();
+            }
+
+            function clearAllDesks() {
+                cupsOpenedState = false;
+                leftDesk.querySelectorAll('.desk-object').forEach(function(el) { el.remove(); });
+                rightDesk.querySelectorAll('.desk-object').forEach(function(el) { el.remove(); });
+                updateDeskStatus();
+            }
+
+            function loadModelToDesks(model) {
+                clearAllDesks();
+                for (let i = 0; i < model.leftCups; i++) addObjectToDesk(leftDesk, 'cup', false);
+                for (let i = 0; i < model.leftSticks; i++) addObjectToDesk(leftDesk, 'stick', false);
+                for (let i = 0; i < model.rightCups; i++) addObjectToDesk(rightDesk, 'cup', false);
+                for (let i = 0; i < model.rightSticks; i++) addObjectToDesk(rightDesk, 'stick', false);
+            }
+
+            function loadRightOnlyToDesks(model) {
+                clearAllDesks();
+                for (let i = 0; i < model.rightCups; i++) addObjectToDesk(rightDesk, 'cup', false);
+                for (let i = 0; i < model.rightSticks; i++) addObjectToDesk(rightDesk, 'stick', false);
+            }
+
+            resetLeftDeskBtn.addEventListener('click', function() {
+                if (typeof activeLevel === 'number') {
+                    cupsOpenedState = false;
+                    feedbackBanner.classList.add('hidden');
+                    if (activeLevel === 0) {
+                        loadRightOnlyToDesks(storyLevels[activeLevel].model);
+                    } else {
+                        clearAllDesks();
+                    }
+                    sfxRemove();
+                }
+            });
+
+            autoModelBtn.addEventListener('click', function() {
+                if (typeof activeLevel === 'number') {
+                    cupsOpenedState = false;
+                    feedbackBanner.classList.add('hidden');
+                    loadModelToDesks(storyLevels[activeLevel].model);
+                    sfxPop();
+                }
+            });
+
+            clearDesksBtn.addEventListener('click', function() {
+                clearAllDesks();
+                sfxRemove();
+            });
+
+            /* =========================================================================
+               7. DRAG & DROP (MOUSE & TOUCH) SERTA TOMBOL + KIRI / + KANAN
+               ========================================================================= */
+            const rackItems = document.querySelectorAll('#left-desk, #right-desk');
+            const draggableTools = document.querySelectorAll('[draggable="true"][data-item]');
+            let activeDragItemType = null;
+            let isTouchDragging = false;
+
+            draggableTools.forEach(function(tool) {
+                tool.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', tool.dataset.item);
+                    tool.style.opacity = '0.5';
+                });
+
+                tool.addEventListener('dragend', function() {
+                    tool.style.opacity = '1';
+                });
+
+                tool.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    isTouchDragging = true;
+                    activeDragItemType = tool.dataset.item;
+                    tool.style.opacity = '0.5';
+                }, { passive: false });
+
+                tool.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                    if (!isTouchDragging) return;
+                    const touch = e.touches[0];
+                    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+
+                    leftDesk.classList.remove('drag-over');
+                    rightDesk.classList.remove('drag-over');
+
+                    if (targetEl && (targetEl === leftDesk || leftDesk.contains(targetEl))) {
+                        leftDesk.classList.add('drag-over');
+                    } else if (targetEl && (targetEl === rightDesk || rightDesk.contains(targetEl))) {
+                        rightDesk.classList.add('drag-over');
+                    }
+                }, { passive: false });
+
+                tool.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    if (!isTouchDragging) return;
+                    const touch = e.changedTouches[0];
+                    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+
+                    leftDesk.classList.remove('drag-over');
+                    rightDesk.classList.remove('drag-over');
+                    tool.style.opacity = '1';
+
+                    if (targetEl && (targetEl === leftDesk || leftDesk.contains(targetEl))) {
+                        addObjectToDesk(leftDesk, activeDragItemType, true);
+                    } else if (targetEl && (targetEl === rightDesk || rightDesk.contains(targetEl))) {
+                        addObjectToDesk(rightDesk, activeDragItemType, true);
+                    }
+
+                    isTouchDragging = false;
+                    activeDragItemType = null;
+                }, { passive: false });
+            });
+
+            rackItems.forEach(function(desk) {
+                desk.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    desk.classList.add('drag-over');
+                });
+
+                desk.addEventListener('dragleave', function() {
+                    desk.classList.remove('drag-over');
+                });
+
+                desk.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    desk.classList.remove('drag-over');
+                    const itemType = e.dataTransfer.getData('text/plain');
+                    if (itemType) {
+                        addObjectToDesk(desk, itemType, true);
+                    }
+                });
+            });
+
+            document.querySelectorAll('[data-add-item]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const itemType = btn.dataset.addItem;
+                    const desk = btn.dataset.side === 'left' ? leftDesk : rightDesk;
+                    addObjectToDesk(desk, itemType, true);
+                });
+            });
+
+            /* =========================================================================
+               8. PENGHITUNG REAL-TIME, TOMBOL AMBIL ADIL & BUKA SEMUA GELAS
+               ========================================================================= */
+            function formatContextualCount(cups, sticks) {
+                if (cups === 0 && sticks === 0) return "0 Gelas Misteri & 0 Stik Es Krim";
+                return cups + " Gelas Misteri & " + sticks + " Stik Es Krim";
+            }
+
+            const equalSignSVG = '<svg class="w-7 h-7 sm:w-8 sm:h-8 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/></svg>';
+            const notEqualSignSVG = '<svg class="w-7 h-7 sm:w-8 sm:h-8 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="16" y1="4" x2="8" y2="20"/></svg>';
+
+            function updateDeskStatus() {
+                const leftObjs = Array.from(leftDesk.querySelectorAll('.desk-object:not(.anim-remove)'));
+                const rightObjs = Array.from(rightDesk.querySelectorAll('.desk-object:not(.anim-remove)'));
+
+                const leftCups = leftObjs.filter(function(el) { return el.dataset.item === 'cup'; }).length;
+                const leftSticks = leftObjs.filter(function(el) { return el.dataset.item === 'stick'; }).length;
+                const rightCups = rightObjs.filter(function(el) { return el.dataset.item === 'cup'; }).length;
+                const rightSticks = rightObjs.filter(function(el) { return el.dataset.item === 'stick'; }).length;
+
+                leftPlaceholder.classList.toggle('hidden', leftObjs.length > 0);
+                rightPlaceholder.classList.toggle('hidden', rightObjs.length > 0);
+
+                if (!cupsOpenedState) {
+                    leftCounterText.textContent = formatContextualCount(leftCups, leftSticks);
+                    rightCounterText.textContent = formatContextualCount(rightCups, rightSticks);
+                }
+
+                /* Status Tombol Ambil Adil */
+                fairRemoveStickBtn.disabled = cupsOpenedState || !(leftSticks >= 1 && rightSticks >= 1);
+                fairRemoveCupBtn.disabled = cupsOpenedState || !(leftCups >= 1 && rightCups >= 1);
+
+                /* Cek apakah siap untuk "Buka Semua Gelas":
+                   Salah satu meja hanya berisi Gelas Misteri (>= 1 gelas, 0 stik)
+                   dan meja seberangnya hanya berisi Stik Es Krim (0 gelas, >= 1 stik)
+                   serta banyak stik habis dibagi banyak gelas */
+                const leftOnlyCupsRightOnlySticks = (leftCups >= 1 && leftSticks === 0 && rightCups === 0 && rightSticks >= 1 && (rightSticks % leftCups === 0));
+                const rightOnlyCupsLeftOnlySticks = (rightCups >= 1 && rightSticks === 0 && leftCups === 0 && leftSticks >= 1 && (leftSticks % rightCups === 0));
+
+                if (cupsOpenedState) {
+                    openCupsBtn.disabled = true;
+                } else if (leftOnlyCupsRightOnlySticks || rightOnlyCupsLeftOnlySticks) {
+                    openCupsBtn.disabled = false;
+                    openCupsBtnText.textContent = "Buka Semua Gelas";
+                } else {
+                    openCupsBtn.disabled = true;
+                    openCupsBtnText.textContent = "Buka Semua Gelas";
+                }
+
+                const secretValue = getCurrentSecretValue();
+                const totalLeft = (leftCups * secretValue) + leftSticks;
+                const totalRight = (rightCups * secretValue) + rightSticks;
+
+                if (leftObjs.length === 0 && rightObjs.length === 0) {
+                    centerEqualSign.innerHTML = equalSignSVG;
+                    centerEqualSign.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-sky-600 text-white leading-none flex items-center justify-center shadow-lg shadow-sky-500/30 border-2 border-sky-300 transition-all duration-300";
+                    balancePill.className = "px-3.5 py-1.5 rounded-full bg-sky-50 border border-sky-200 text-sky-800 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all";
+                    balancePill.querySelector('span:first-child').className = "w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse";
+                    balancePillText.textContent = "Susun Meja Kiri dan Meja Kanan Sesuai Soal";
+                } else if (leftObjs.length === 0 && rightObjs.length > 0) {
+                    centerEqualSign.innerHTML = equalSignSVG;
+                    centerEqualSign.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-sky-600 text-white leading-none flex items-center justify-center shadow-lg shadow-sky-500/30 border-2 border-sky-300 transition-all duration-300";
+                    balancePill.className = "px-3.5 py-1.5 rounded-full bg-sky-50 border border-sky-200 text-sky-800 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all";
+                    balancePill.querySelector('span:first-child').className = "w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse";
+                    balancePillText.textContent = "Susun Meja Kiri agar Sama dengan Meja Kanan";
+                } else if (cupsOpenedState || totalLeft === totalRight) {
+                    centerEqualSign.innerHTML = equalSignSVG;
+                    centerEqualSign.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500 text-white leading-none flex items-center justify-center shadow-lg shadow-emerald-500/30 border-2 border-emerald-300 transition-all duration-300 anim-balanced";
+                    balancePill.className = "px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all";
+                    balancePill.querySelector('span:first-child').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                    balancePillText.textContent = "Kedua Meja Sama Banyak (=)";
+                } else {
+                    centerEqualSign.innerHTML = notEqualSignSVG;
+                    centerEqualSign.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-500 text-white leading-none flex items-center justify-center shadow-lg shadow-amber-500/30 border-2 border-amber-300 transition-all duration-300";
+                    balancePill.className = "px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all";
+                    balancePill.querySelector('span:first-child').className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+                    balancePillText.textContent = totalLeft > totalRight ? "Meja Kiri Lebih Banyak" : "Meja Kanan Lebih Banyak";
+                }
+            }
+
+            /* Aksi Ambil Adil 1 Stik dari Kedua Meja */
+            fairRemoveStickBtn.addEventListener('click', function() {
+                const lStick = leftDesk.querySelector('.desk-object[data-item="stick"]:not(.anim-remove)');
+                const rStick = rightDesk.querySelector('.desk-object[data-item="stick"]:not(.anim-remove)');
+                if (lStick && rStick) {
+                    sfxRemove();
+                    lStick.classList.add('anim-remove');
+                    rStick.classList.add('anim-remove');
+                    setTimeout(function() {
+                        lStick.remove();
+                        rStick.remove();
+                        updateDeskStatus();
+                    }, 320);
+                }
+            });
+
+            /* Aksi Ambil Adil 1 Gelas dari Kedua Meja */
+            fairRemoveCupBtn.addEventListener('click', function() {
+                const lCup = leftDesk.querySelector('.desk-object[data-item="cup"]:not(.anim-remove)');
+                const rCup = rightDesk.querySelector('.desk-object[data-item="cup"]:not(.anim-remove)');
+                if (lCup && rCup) {
+                    sfxRemove();
+                    lCup.classList.add('anim-remove');
+                    rCup.classList.add('anim-remove');
+                    setTimeout(function() {
+                        lCup.remove();
+                        rCup.remove();
+                        updateDeskStatus();
+                    }, 320);
+                }
+            });
+
+            /* Animasi Buka Semua Gelas & Pembagian Stik Rata ke Dalam Setiap Gelas */
+            openCupsBtn.addEventListener('click', function() {
+                if (cupsOpenedState) return;
+
+                const leftCups = Array.from(leftDesk.querySelectorAll('.desk-object[data-item="cup"]:not(.anim-remove)'));
+                const rightCups = Array.from(rightDesk.querySelectorAll('.desk-object[data-item="cup"]:not(.anim-remove)'));
+                const leftSticks = Array.from(leftDesk.querySelectorAll('.desk-object[data-item="stick"]:not(.anim-remove)'));
+                const rightSticks = Array.from(rightDesk.querySelectorAll('.desk-object[data-item="stick"]:not(.anim-remove)'));
+
+                let cupDesk = null;
+                let cupElements = [];
+                let stickElements = [];
+
+                if (leftCups.length >= 1 && leftSticks.length === 0 && rightCups.length === 0 && rightSticks.length >= 1) {
+                    cupDesk = leftDesk;
+                    cupElements = leftCups;
+                    stickElements = rightSticks;
+                } else if (rightCups.length >= 1 && rightSticks.length === 0 && leftCups.length === 0 && leftSticks.length >= 1) {
+                    cupDesk = rightDesk;
+                    cupElements = rightCups;
+                    stickElements = leftSticks;
+                } else {
+                    return;
+                }
+
+                const perCupCount = Math.floor(stickElements.length / cupElements.length);
+                cupsOpenedState = true;
+                openCupsBtn.disabled = true;
+                openCupsBtnText.textContent = "Membuka Gelas...";
+                sfxPop();
+
+                /* Animasi stik terbang terbagi rata menuju masing-masing gelas */
+                stickElements.forEach(function(stickEl, idx) {
+                    const targetCup = cupElements[idx % cupElements.length];
+                    const sRect = stickEl.getBoundingClientRect();
+                    const cRect = targetCup.getBoundingClientRect();
+
+                    const clone = document.createElement('div');
+                    clone.className = 'flying-stick';
+                    clone.style.left = sRect.left + 'px';
+                    clone.style.top = sRect.top + 'px';
+                    clone.innerHTML = createStickSVG();
+                    document.body.appendChild(clone);
+
+                    stickEl.style.opacity = '0';
+
+                    requestAnimationFrame(function() {
+                        const dx = (cRect.left + cRect.width / 2) - (sRect.left + sRect.width / 2);
+                        const dy = (cRect.top + cRect.height / 2) - (sRect.top + sRect.height / 2);
+                        clone.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(0.55)';
+                        clone.style.opacity = '0.2';
+                    });
+
+                    setTimeout(function() {
+                        clone.remove();
+                    }, 660);
+                });
+
+                setTimeout(function() {
+                    stickElements.forEach(function(el) { el.remove(); });
+
+                    cupElements.forEach(function(cupEl) {
+                        cupEl.innerHTML = createCupSVG(perCupCount);
+                        cupEl.classList.add('cup-opened');
+                    });
+
+                    sfxSuccess();
+                    openCupsBtnText.textContent = "Terbuka (Isi: " + perCupCount + " stik)";
+
+                    leftCounterText.textContent = formatContextualCount(
+                        cupDesk === leftDesk ? cupElements.length : 0,
+                        0
+                    ) + (cupDesk === leftDesk ? " (masing-masing " + perCupCount + " stik)" : "");
+
+                    rightCounterText.textContent = formatContextualCount(
+                        cupDesk === rightDesk ? cupElements.length : 0,
+                        0
+                    ) + (cupDesk === rightDesk ? " (masing-masing " + perCupCount + " stik)" : "");
+
+                    updateDeskStatus();
+                }, 680);
+            });
+
+            /* =========================================================================
+               9. VALIDASI JAWABAN AKHIR & KONFETI
+               ========================================================================= */
+            document.querySelectorAll('[data-numpad]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    finalAnswerInput.value = btn.dataset.numpad;
+                    sfxPop();
+                });
+            });
+
+            function validateFinalAnswer() {
+                const rawVal = finalAnswerInput.value.trim();
+                feedbackBanner.classList.remove('hidden', 'anim-shake');
+                void feedbackBanner.offsetWidth;
+
+                if (rawVal === '') {
+                    sfxGentleError();
+                    feedbackBanner.className = "mt-4 p-4 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900 text-sm sm:text-base font-semibold flex items-start gap-3 anim-shake";
+                    feedbackBanner.innerHTML =
+                        '<span class="text-xl leading-none">💡</span>' +
+                        '<div>Tuliskan angka jawabanmu terlebih dahulu pada kotak <b>"Jadi, isi 1 gelas misteri adalah ... batang stik es krim"</b>.</div>';
+                    return;
+                }
+
+                const userAns = parseInt(rawVal, 10);
+                const secretAns = getCurrentSecretValue();
+
+                if (userAns === secretAns) {
+                    sfxSuccess();
+                    launchConfetti();
+                    feedbackBanner.className = "mt-4 p-4 rounded-2xl border border-emerald-300 bg-emerald-50 text-emerald-900 text-sm sm:text-base font-semibold flex items-start gap-3";
+                    feedbackBanner.innerHTML =
+                        '<span class="text-2xl leading-none">🎉</span>' +
+                        '<div>' +
+                            '<div class="font-extrabold text-emerald-800">Hebat Sekali! Jawabanmu Benar!</div>' +
+                            '<div class="text-xs sm:text-sm text-emerald-700 mt-0.5">' +
+                                'Setiap 1 gelas misteri berisi <b>' + secretAns + ' batang stik es krim</b>. Langkahmu sangat adil dan tepat!' +
+                            '</div>' +
+                        '</div>';
+                } else {
+                    sfxGentleError();
+                    feedbackBanner.className = "mt-4 p-4 rounded-2xl border border-rose-300 bg-rose-50 text-rose-900 text-sm sm:text-base font-semibold flex items-start gap-3 anim-shake";
+                    feedbackBanner.innerHTML =
+                        '<span class="text-xl leading-none">🤔</span>' +
+                        '<div>' +
+                            '<div class="font-extrabold text-rose-800">Belum Tepat, Ayo Coba Lagi!</div>' +
+                            '<div class="text-xs sm:text-sm text-rose-700 mt-0.5">' +
+                                'Petunjuk: Susun soal ke Meja Kiri dan Meja Kanan, gunakan tombol <b>Ambil Adil</b> hingga tersisa Gelas Misteri di satu sisi dan Stik Es Krim di sisi seberang, lalu tekan <b>Buka Semua Gelas</b>.' +
+                            '</div>' +
+                        '</div>';
+                }
+            }
+
+            checkAnswerBtn.addEventListener('click', validateFinalAnswer);
+            finalAnswerInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    validateFinalAnswer();
+                }
+            });
+
+            /* =========================================================================
+               10. FULLSCREEN & EFEK KONFETI
+               ========================================================================= */
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const iconFsEnter = document.getElementById('icon-fs-enter');
+            const iconFsExit = document.getElementById('icon-fs-exit');
+
+            fullscreenBtn.addEventListener('click', function() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(function() {});
+                } else if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(function() {});
+                }
+            });
+
+            document.addEventListener('fullscreenchange', function() {
+                if (document.fullscreenElement) {
+                    iconFsEnter.classList.add('hidden');
+                    iconFsExit.classList.remove('hidden');
+                } else {
+                    iconFsEnter.classList.remove('hidden');
+                    iconFsExit.classList.add('hidden');
+                }
+            });
+
+            const confettiCanvas = document.getElementById('confetti-canvas');
+            const confettiCtx = confettiCanvas.getContext('2d');
+            let particles = [];
+
+            function resizeConfettiCanvas() {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeConfettiCanvas);
+            resizeConfettiCanvas();
+
+            function launchConfetti() {
+                const palette = ['#0284c7', '#10b981', '#f59e0b', '#6366f1', '#f43f5e'];
+                for (let i = 0; i < 75; i++) {
+                    particles.push({
+                        x: window.innerWidth / 2,
+                        y: window.innerHeight / 2,
+                        vx: (Math.random() - 0.5) * 16,
+                        vy: (Math.random() - 0.72) * 16,
+                        size: Math.random() * 8 + 4,
+                        color: palette[Math.floor(Math.random() * palette.length)],
+                        angle: Math.random() * 360,
+                        spin: (Math.random() - 0.5) * 12,
+                        alpha: 1
+                    });
+                }
+                if (particles.length <= 75) {
+                    renderConfetti();
+                }
+            }
+
+            function renderConfetti() {
+                confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.36;
+                    p.angle += p.spin;
+                    p.alpha -= 0.014;
+
+                    confettiCtx.save();
+                    confettiCtx.translate(p.x, p.y);
+                    confettiCtx.rotate((p.angle * Math.PI) / 180);
+                    confettiCtx.globalAlpha = Math.max(0, p.alpha);
+                    confettiCtx.fillStyle = p.color;
+                    confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                    confettiCtx.restore();
+
+                    if (p.alpha <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+                if (particles.length > 0) {
+                    requestAnimationFrame(renderConfetti);
+                }
+            }
+
+            /* Inisialisasi Level 1 saat aplikasi dibuka */
+            selectLevel(0);
+        });
+    </script>
 </body>
 </html>
