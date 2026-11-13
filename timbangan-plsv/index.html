@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timbangan Persamaan Linear Satu Variabel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: #f0f4f8;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.16) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.14) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+                radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 24px 24px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+
+        .font-math {
+            font-family: var(--font-mono);
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
+        }
+
+        /* Beban (Weights) */
+        .weight {
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+        }
+
+        .weight:hover {
+            transform: translateY(-2px) scale(1.06);
+        }
+
+        .weight:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        /* Beban Variabel X / Segitiga */
+        .weight-x {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #ffffff, #fffbeb);
+            border: 2px solid #f59e0b;
+            box-shadow: 0 4px 0 #d97706, 0 6px 12px rgba(245, 158, 11, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .weight-x img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* Beban Konstanta 1 */
+        .weight-1 {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #34d399, #10b981);
+            border: 2px solid #059669;
+            box-shadow: 0 4px 0 #047857, 0 6px 12px rgba(16, 185, 129, 0.25);
+            color: white;
+            font-weight: 800;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Ukuran beban di dalam piringan timbangan agar muat banyak */
+        .pan-weight-x {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            box-shadow: 0 3px 0 #d97706;
+        }
+
+        .pan-weight-x img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .pan-weight-1 {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 0 #047857;
+        }
+
+        /* Drop Zone (Piringan Timbangan) */
+        .drop-zone {
+            transition: all 0.25s ease;
+            border: 2px dashed #cbd5e1;
+            background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.98) 100%);
+        }
+
+        .drop-zone.highlight {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: #3b82f6;
+            border-style: solid;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+            transform: scale(1.03);
+        }
+
+        /* Animasi Fisika Timbangan */
+        .beam {
+            transform-origin: center center;
+            transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .pan-holder {
+            transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Tombol Taktil 3D */
+        .btn-3d {
+            transition: all 0.15s ease;
+        }
+        .btn-3d:active {
+            transform: translateY(2px);
+        }
+
+        /* Animasi Feedback */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9) translateY(6px); }
+            70% { transform: scale(1.02) translateY(0); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .animate-pop {
+            animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes popWeight {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .weight-enter {
+            animation: popWeight 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Custom Scrollbar untuk piringan jika penuh */
+        .pan-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .pan-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-indigo-100 selection:text-indigo-800">
+
+    <!-- Audio Elements -->
+    <audio id="backsound" loop>
+        <source src="https://raw.githubusercontent.com/dilan-math/plsv/master/Backsound%20Game.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Canvas untuk efek Konfeti -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- Top Navbar / Header -->
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+                    <!-- Icon Timbangan SVG -->
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 7l9-3 9 3M5 7l-2 7h4l-2-7zm14 0l-2 7h4l-2-7zM8 21h8"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-xl font-extrabold tracking-tight text-slate-800 leading-tight">
+                        Timbangan Persamaan Linear Satu Variabel
+                    </h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Media Pembelajaran Interaktif Matematika SMP</p>
+                </div>
+            </div>
+
+            <!-- Controls: Score, Audio, Fullscreen -->
+            <div class="flex items-center gap-2 sm:gap-3 ml-auto">
+                <!-- Progress Badge -->
+                <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold">
+                    <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Selesai: <span id="score-count">0</span>/10</span>
+                </div>
+
+                <!-- Toggle Backsound Button -->
+                <button id="audio-toggle-btn" title="Nyalakan / Matikan Musik Latar"
+                    class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200/80 flex items-center gap-1.5 text-xs font-semibold">
+                    <!-- Icon Sound Off (Default sebelum klik pertama) -->
+                    <svg id="icon-sound-off" class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                    </svg>
+                    <!-- Icon Sound On -->
+                    <svg id="icon-sound-on" class="w-5 h-5 text-indigo-600 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                    <span class="hidden md:inline" id="audio-label">Musik</span>
+                </button>
+
+                <!-- Fullscreen Button -->
+                <button id="fullscreen-btn" title="Layar Penuh"
+                    class="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all btn-3d">
+                    <svg id="icon-expand" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                    </svg>
+                    <svg id="icon-compress" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+        
+        <!-- Quick Question Navigator Pills -->
+        <div class="mb-6 flex items-center justify-center">
+            <div id="question-pills" class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 bg-white/70 backdrop-blur-md p-2 rounded-2xl border border-slate-200/80 shadow-sm">
+                <!-- Pills akan di-generate lewat JS -->
+            </div>
+        </div>
+
+        <!-- Bento Grid 2 Kolom -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- PANEL KIRI: Soal, Input Jawaban & Keypad (5 Kolom di Desktop) -->
+            <div class="lg:col-span-5 space-y-5">
+                
+                <!-- Kartu Soal -->
+                <div class="glass-card rounded-3xl p-5 sm:p-6">
+                    <!-- Navigasi Soal -->
+                    <div class="flex items-center justify-between mb-4">
+                        <button id="prev-question" class="flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:pointer-events-none text-slate-700 font-semibold text-sm transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            <span>Prev</span>
+                        </button>
+
+                        <span id="question-number" class="px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-700 font-bold text-sm border border-indigo-100">
+                            Soal 1 / 10
+                        </span>
+
+                        <button id="next-question" class="flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:pointer-events-none text-slate-700 font-semibold text-sm transition-colors">
+                            <span>Next</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Kotak Persamaan -->
+                    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-center shadow-inner border border-slate-800">
+                        <span class="block text-xs font-semibold uppercase tracking-wider text-indigo-300 mb-1">Tentukan nilai △ dari persamaan:</span>
+                        <div id="question-display" class="font-math text-3xl sm:text-4xl font-extrabold text-white tracking-wide py-2">
+                            △ + 2 = 5
+                        </div>
+                    </div>
+
+                    <!-- Input Jawaban -->
+                    <div class="mt-5">
+                        <label for="answer" class="block text-sm font-bold text-slate-700 mb-2">
+                            Jawabanmu (Nilai <span class="text-amber-600 font-extrabold">△</span>):
+                        </label>
+                        <div class="flex gap-2.5">
+                            <div class="relative flex-1">
+                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-math font-bold text-lg">△ =</span>
+                                <input type="text" id="answer" 
+                                    class="w-full pl-14 pr-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-indigo-500 focus:bg-white rounded-2xl font-math text-xl font-bold text-slate-800 outline-none transition-all cursor-default select-none"
+                                    placeholder="?" readonly>
+                            </div>
+                            <button id="check-answer" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold shadow-lg shadow-indigo-500/25 btn-3d flex items-center gap-2 shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>Periksa</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Notifikasi Feedback -->
+                    <div id="feedback" class="mt-4 p-3.5 rounded-2xl hidden font-semibold text-sm flex items-center gap-2.5">
+                        <!-- Diisi via JS -->
+                    </div>
+                </div>
+
+                <!-- Kartu Keypad Numerik -->
+                <div class="glass-card rounded-3xl p-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Keypad Angka</span>
+                        <span class="text-xs text-slate-400">Bisa juga ketik lewat keyboard</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="7">7</button>
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="8">8</button>
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="9">9</button>
+                        
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="4">4</button>
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="5">5</button>
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="6">6</button>
+                        
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="1">1</button>
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="2">2</button>
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="3">3</button>
+                        
+                        <button id="clear-btn" class="btn-3d bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 font-bold py-3.5 rounded-2xl text-lg transition-colors">C</button>
+                        <button class="keypad-btn btn-3d bg-white hover:bg-indigo-50 border border-slate-200 shadow-sm text-slate-800 font-math font-bold py-3.5 rounded-2xl text-xl transition-colors" data-number="0">0</button>
+                        <button id="backspace-btn" class="btn-3d bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-bold py-3.5 rounded-2xl text-lg flex items-center justify-center transition-colors" title="Hapus">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL KANAN: Simulasi Timbangan Interaktif (7 Kolom di Desktop) -->
+            <div class="lg:col-span-7">
+                <div class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between">
+                    
+                    <!-- Header Panel Timbangan & Status Keseimbangan -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-200/70">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-extrabold text-slate-800 flex items-center gap-2">
+                                <span>Simulasi Timbangan</span>
+                            </h2>
+                            <p class="text-xs text-slate-500">Seret beban ke piringan, atau klik beban di piringan untuk menghapus.</p>
+                        </div>
+
+                        <!-- Status Keseimbangan Badge -->
+                        <div id="balance-status" class="px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span id="balance-text">Seimbang</span>
+                        </div>
+                    </div>
+
+                    <!-- Area Visualisasi Timbangan -->
+                    <div class="relative w-full h-[300px] sm:h-[330px] my-2 select-none flex flex-col justify-end items-center overflow-hidden rounded-2xl bg-gradient-to-b from-sky-50/50 to-slate-100/60 border border-slate-200/60 p-4">
+                        
+                        <!-- Label Ruas Kiri & Ruas Kanan di pojok atas -->
+                        <div class="absolute top-3 left-4 right-4 flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400 pointer-events-none">
+                            <span class="bg-white/80 px-2.5 py-1 rounded-lg border border-slate-200/70">Ruas Kiri</span>
+                            <span class="bg-white/80 px-2.5 py-1 rounded-lg border border-slate-200/70">Ruas Kanan</span>
+                        </div>
+
+                        <!-- Container Timbangan -->
+                        <div class="relative w-full max-w-[520px] h-[240px] flex items-end justify-center">
+                            
+                            <!-- Batang Timbangan (Beam) -->
+                            <div id="beam" class="beam absolute bottom-[88px] w-[84%] h-3.5 bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 rounded-full shadow-md z-20 flex items-center justify-between">
+                                
+                                <!-- Poros Tengah (Pivot Dot) -->
+                                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-amber-400 border-4 border-slate-800 shadow z-30"></div>
+
+                                <!-- PIRINGAN KIRI (Left Pan Assembly) -->
+                                <div class="absolute left-[4%] sm:left-[6%] bottom-1 -translate-x-1/2 flex flex-col items-center">
+                                    <!-- Counter-rotate holder agar piringan selalu tegak lurus -->
+                                    <div id="left-pan-holder" class="pan-holder flex flex-col items-center origin-bottom">
+                                        <!-- Drop Zone Kiri -->
+                                        <div id="left-pan" class="drop-zone pan-scroll w-[135px] sm:w-[165px] h-[125px] sm:h-[135px] rounded-2xl p-2 flex flex-wrap content-end justify-center gap-1.5 shadow-lg overflow-y-auto">
+                                            <!-- Beban kiri masuk ke sini -->
+                                        </div>
+                                        <!-- Alas Piringan Metalik -->
+                                        <div class="w-[145px] sm:w-[175px] h-2.5 bg-gradient-to-r from-slate-400 via-slate-300 to-slate-400 rounded-b-xl shadow"></div>
+                                        <!-- Tiang Penyangga Piringan -->
+                                        <div class="w-2 h-4 bg-slate-500"></div>
+                                    </div>
+                                </div>
+
+                                <!-- PIRINGAN KANAN (Right Pan Assembly) -->
+                                <div class="absolute right-[4%] sm:right-[6%] bottom-1 translate-x-1/2 flex flex-col items-center">
+                                    <div id="right-pan-holder" class="pan-holder flex flex-col items-center origin-bottom">
+                                        <!-- Drop Zone Kanan -->
+                                        <div id="right-pan" class="drop-zone pan-scroll w-[135px] sm:w-[165px] h-[125px] sm:h-[135px] rounded-2xl p-2 flex flex-wrap content-end justify-center gap-1.5 shadow-lg overflow-y-auto">
+                                            <!-- Beban kanan masuk ke sini -->
+                                        </div>
+                                        <!-- Alas Piringan Metalik -->
+                                        <div class="w-[145px] sm:w-[175px] h-2.5 bg-gradient-to-r from-slate-400 via-slate-300 to-slate-400 rounded-b-xl shadow"></div>
+                                        <!-- Tiang Penyangga Piringan -->
+                                        <div class="w-2 h-4 bg-slate-500"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Tumpuan Timbangan (Fulcrum SVG Modern) -->
+                            <div class="relative z-10 w-[96px] h-[94px] flex flex-col items-center justify-end">
+                                <svg viewBox="0 0 120 110" class="w-full h-full drop-shadow-md">
+                                    <defs>
+                                        <linearGradient id="fulcrumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#475569"/>
+                                            <stop offset="50%" stop-color="#334155"/>
+                                            <stop offset="100%" stop-color="#1e293b"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Segitiga Tumpuan -->
+                                    <path d="M60 12 L102 98 L18 98 Z" fill="url(#fulcrumGrad)" stroke="#64748b" stroke-width="2" stroke-linejoin="round"/>
+                                    <!-- Alas Bawah -->
+                                    <rect x="8" y="96" width="104" height="12" rx="6" fill="#1e293b"/>
+                                    <!-- Lubang Dekoratif -->
+                                    <circle cx="60" cy="66" r="10" fill="#94a3b8" opacity="0.3"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Beban & Kontrol Bawah -->
+                    <div class="mt-3 pt-4 border-t border-slate-200/70">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            
+                            <!-- Area Beban yang Tersedia -->
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-4 bg-slate-50/90 px-4 py-3 rounded-2xl border border-slate-200/80 w-full sm:w-auto">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Beban:</span>
+                                
+                                <!-- Grup Beban Variabel (△) -->
+                                <div class="flex items-center gap-2">
+                                    <div class="weight weight-x" draggable="true" data-weight="x" title="Seret variabel △ ke timbangan">
+                                        <img src="https://i.imgur.com/Labz1hK.png" alt="△" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                        <svg class="w-6 h-6 text-amber-500 hidden" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 3L2 20h20L12 3z"/>
+                                        </svg>
+                                    </div>
+                                    <!-- Tombol Cepat Tambah △ ke Kiri/Kanan (Ramah Layar Sentuh/HP) -->
+                                    <div class="flex flex-col gap-1">
+                                        <button type="button" data-quick-add="x" data-target="left" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 transition-colors">+ Kiri</button>
+                                        <button type="button" data-quick-add="x" data-target="right" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 transition-colors">+ Kanan</button>
+                                    </div>
+                                </div>
+
+                                <div class="h-8 w-[1px] bg-slate-200"></div>
+
+                                <!-- Grup Beban Konstanta (1) -->
+                                <div class="flex items-center gap-2">
+                                    <div class="weight weight-1" draggable="true" data-weight="1" title="Seret satuan 1 ke timbangan">1</div>
+                                    <!-- Tombol Cepat Tambah 1 ke Kiri/Kanan -->
+                                    <div class="flex flex-col gap-1">
+                                        <button type="button" data-quick-add="1" data-target="left" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition-colors">+ Kiri</button>
+                                        <button type="button" data-quick-add="1" data-target="right" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition-colors">+ Kanan</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Reset Timbangan -->
+                            <button id="reset-scale" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-sm transition-all btn-3d flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                <span>Reset Timbangan</span>
+                            </button>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer Modern -->
+    <footer class="mt-auto bg-white/80 backdrop-blur-md border-t border-slate-200/80 py-3.5 px-4 text-center">
+        <p class="text-xs sm:text-sm font-medium text-slate-600">
+            Pembuat: <span class="font-bold text-slate-800">Ahmad Fauzi, S.Pd.</span> - Guru Matematika SMPN 15 Banjarbaru
+        </p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- 1. AUDIO & MUSIK LATAR ---
+            const backsound = document.getElementById('backsound');
+            const audioToggleBtn = document.getElementById('audio-toggle-btn');
+            const iconSoundOff = document.getElementById('icon-sound-off');
+            const iconSoundOn = document.getElementById('icon-sound-on');
+            let isMusicPlaying = false;
+            let userMutedManually = false;
+
+            function updateAudioUI() {
+                if (isMusicPlaying) {
+                    iconSoundOff.classList.add('hidden');
+                    iconSoundOn.classList.remove('hidden');
+                    audioToggleBtn.classList.add('bg-indigo-50', 'border-indigo-200', 'text-indigo-700');
+                } else {
+                    iconSoundOff.classList.remove('hidden');
+                    iconSoundOn.classList.add('hidden');
+                    audioToggleBtn.classList.remove('bg-indigo-50', 'border-indigo-200', 'text-indigo-700');
+                }
+            }
+
+            // Mulai musik otomatis pada interaksi pertama pengguna (jika tidak di-mute)
+            document.body.addEventListener('click', function startMusic() {
+                if (!userMutedManually && !isMusicPlaying) {
+                    backsound.volume = 0.25;
+                    backsound.play().then(() => {
+                        isMusicPlaying = true;
+                        updateAudioUI();
+                    }).catch(() => {});
+                }
+                document.body.removeEventListener('click', startMusic);
+            }, { once: true });
+
+            audioToggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (isMusicPlaying) {
+                    backsound.pause();
+                    isMusicPlaying = false;
+                    userMutedManually = true;
+                } else {
+                    backsound.volume = 0.25;
+                    backsound.play().then(() => {
+                        isMusicPlaying = true;
+                        userMutedManually = false;
+                    }).catch(() => {});
+                }
+                updateAudioUI();
+            });
+
+            // Sound Effects Benar & Salah
+            const soundBenar = new Audio('https://raw.githubusercontent.com/dilan-math/plsv/4ca88c5eb6a02d80d2e875ebb0b472fcc6ffd205/benar-uzi.wav');
+            const soundSalah = new Audio('https://raw.githubusercontent.com/dilan-math/plsv/4ca88c5eb6a02d80d2e875ebb0b472fcc6ffd205/salah-uzi.wav');
+            soundBenar.preload = "auto";
+            soundSalah.preload = "auto";
+
+            // --- 2. DATA SOAL ---
+            const questions = [
+                { equation: "△ + 2 = 5", answer: 3 },
+                { equation: "△ + 6 = 8", answer: 2 },
+                { equation: "2△ + 3 = △ + 6", answer: 3 },
+                { equation: "2△ + 1 = 3△", answer: 1 },
+                { equation: "3 + 2△ = 7", answer: 2 },
+                { equation: "△ + 4 = 7", answer: 3 },
+                { equation: "3△ = 6", answer: 2 },
+                { equation: "△ + 7 = 10", answer: 3 },
+                { equation: "2△ + 1 = 7", answer: 3 },
+                { equation: "4△ + 3 = 7", answer: 1 }
+            ];
+
+            let currentQuestionIndex = 0;
+            const solvedQuestions = new Set();
+
+            // --- 3. DOM ELEMENTS ---
+            const questionDisplay = document.getElementById('question-display');
+            const questionNumber = document.getElementById('question-number');
+            const questionPills = document.getElementById('question-pills');
+            const scoreCount = document.getElementById('score-count');
+            const prevButton = document.getElementById('prev-question');
+            const nextButton = document.getElementById('next-question');
+            const answerInput = document.getElementById('answer');
+            const checkButton = document.getElementById('check-answer');
+            const feedback = document.getElementById('feedback');
+            
+            const leftPan = document.getElementById('left-pan');
+            const rightPan = document.getElementById('right-pan');
+            const leftPanHolder = document.getElementById('left-pan-holder');
+            const rightPanHolder = document.getElementById('right-pan-holder');
+            const beam = document.getElementById('beam');
+            const balanceStatus = document.getElementById('balance-status');
+            const balanceText = document.getElementById('balance-text');
+            const resetButton = document.getElementById('reset-scale');
+            
+            const weights = document.querySelectorAll('.weight');
+            const keypadBtns = document.querySelectorAll('.keypad-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const backspaceBtn = document.getElementById('backspace-btn');
+
+            // --- 4. NAVIGASI PILLS & TAMPILAN SOAL ---
+            function renderPills() {
+                questionPills.innerHTML = '';
+                questions.forEach((_, idx) => {
+                    const pill = document.createElement('button');
+                    pill.textContent = idx + 1;
+                    const isCurrent = idx === currentQuestionIndex;
+                    const isSolved = solvedQuestions.has(idx);
+
+                    let baseClass = "w-8 h-8 sm:w-9 sm:h-9 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center ";
+                    if (isCurrent) {
+                        baseClass += "bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105 ring-2 ring-indigo-300";
+                    } else if (isSolved) {
+                        baseClass += "bg-emerald-100 text-emerald-700 border border-emerald-300 hover:bg-emerald-200";
+                    } else {
+                        baseClass += "bg-slate-100 text-slate-600 hover:bg-slate-200";
+                    }
+
+                    pill.className = baseClass;
+                    pill.addEventListener('click', () => {
+                        currentQuestionIndex = idx;
+                        displayQuestion();
+                        resetScale();
+                    });
+                    questionPills.appendChild(pill);
+                });
+                scoreCount.textContent = solvedQuestions.size;
+            }
+
+            function displayQuestion() {
+                const question = questions[currentQuestionIndex];
+                questionDisplay.textContent = question.equation.replaceAll("x", "△");
+                questionNumber.textContent = `Soal ${currentQuestionIndex + 1} / ${questions.length}`;
+                answerInput.value = '';
+                feedback.classList.add('hidden');
+                
+                prevButton.disabled = currentQuestionIndex === 0;
+                nextButton.disabled = currentQuestionIndex === questions.length - 1;
+
+                renderPills();
+                updateScale();
+            }
+
+            prevButton.addEventListener('click', function() {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    displayQuestion();
+                    resetScale();
+                }
+            });
+
+            nextButton.addEventListener('click', function() {
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
+                    displayQuestion();
+                    resetScale();
+                }
+            });
+
+            // --- 5. PEMERIKSAAN JAWABAN & EFEK KONFETI ---
+            function checkUserAnswer() {
+                if (answerInput.value.trim() === '') {
+                    feedback.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'animate-pop');
+                    feedback.classList.add('bg-amber-50', 'text-amber-800', 'border', 'border-amber-200', 'animate-shake');
+                    feedback.innerHTML = `
+                        <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span>Masukkan angka jawaban terlebih dahulu!</span>
+                    `;
+                    setTimeout(() => feedback.classList.remove('animate-shake'), 400);
+                    return;
+                }
+
+                const userAnswer = parseInt(answerInput.value, 10);
+                const correctAnswer = questions[currentQuestionIndex].answer;
+
+                feedback.classList.remove('hidden', 'animate-pop', 'animate-shake');
+                void feedback.offsetWidth; // trigger reflow untuk restart animasi
+
+                if (userAnswer === correctAnswer) {
+                    soundBenar.currentTime = 0;
+                    soundBenar.play().catch(() => {});
+
+                    solvedQuestions.add(currentQuestionIndex);
+                    renderPills();
+                    launchConfetti();
+
+                    feedback.className = "mt-4 p-3.5 rounded-2xl font-semibold text-sm flex items-center gap-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 animate-pop";
+                    feedback.innerHTML = `
+                        <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Hebat! Jawaban Anda benar (△ = ${correctAnswer}).</span>
+                    `;
+                } else {
+                    soundSalah.currentTime = 0;
+                    soundSalah.play().catch(() => {});
+
+                    feedback.className = "mt-4 p-3.5 rounded-2xl font-semibold text-sm flex items-center gap-2.5 bg-rose-50 text-rose-800 border border-rose-200 animate-shake";
+                    feedback.innerHTML = `
+                        <svg class="w-5 h-5 text-rose-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Belum tepat. Gunakan timbangan untuk membantu menemukan nilai △!</span>
+                    `;
+                    answerInput.value = '';
+                }
+            }
+
+            checkButton.addEventListener('click', checkUserAnswer);
+
+            // --- 6. DRAG & DROP + TOUCH + QUICK ADD TIMBANGAN ---
+            let draggedWeight = null;
+            let touchStarted = false;
+
+            weights.forEach(weight => {
+                // Mouse Drag
+                weight.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', weight.dataset.weight);
+                    weight.style.opacity = '0.5';
+                });
+
+                weight.addEventListener('dragend', function() {
+                    weight.style.opacity = '1';
+                });
+
+                // Touch Drag (Tablet / IFP / Mobile)
+                weight.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    touchStarted = true;
+                    draggedWeight = weight.dataset.weight;
+                    weight.style.opacity = '0.5';
+                }, { passive: false });
+
+                weight.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                    if (!touchStarted) return;
+
+                    const touch = e.touches[0];
+                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+
+                    leftPan.classList.remove('highlight');
+                    rightPan.classList.remove('highlight');
+
+                    if (elementBelow && (elementBelow === leftPan || leftPan.contains(elementBelow))) {
+                        leftPan.classList.add('highlight');
+                    } else if (elementBelow && (elementBelow === rightPan || rightPan.contains(elementBelow))) {
+                        rightPan.classList.add('highlight');
+                    }
+                }, { passive: false });
+
+                weight.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    if (!touchStarted) return;
+
+                    const touch = e.changedTouches[0];
+                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+
+                    leftPan.classList.remove('highlight');
+                    rightPan.classList.remove('highlight');
+                    weight.style.opacity = '1';
+
+                    let targetPan = null;
+                    if (elementBelow && (elementBelow === leftPan || leftPan.contains(elementBelow))) {
+                        targetPan = leftPan;
+                    } else if (elementBelow && (elementBelow === rightPan || rightPan.contains(elementBelow))) {
+                        targetPan = rightPan;
+                    }
+
+                    if (targetPan && draggedWeight) {
+                        addWeightToPan(targetPan, draggedWeight);
+                    }
+
+                    touchStarted = false;
+                    draggedWeight = null;
+                }, { passive: false });
+            });
+
+            // Tombol Tambah Cepat (+ Kiri / + Kanan)
+            document.querySelectorAll('[data-quick-add]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const type = this.dataset.quickAdd;
+                    const target = this.dataset.target === 'left' ? leftPan : rightPan;
+                    addWeightToPan(target, type);
+                });
+            });
+
+            // Fungsi Menambahkan Beban ke Piringan
+            function addWeightToPan(pan, weightType) {
+                // Batasi maksimal 24 beban per piringan agar tetap rapi
+                if (pan.children.length >= 24) return;
+
+                const newWeight = document.createElement('div');
+                newWeight.dataset.weight = weightType;
+                newWeight.title = "Klik untuk menghapus beban ini";
+
+                if (weightType === 'x') {
+                    newWeight.className = 'weight weight-x pan-weight-x weight-enter cursor-pointer';
+                    newWeight.innerHTML = `
+                        <img src="https://i.imgur.com/Labz1hK.png" alt="△" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                        <svg class="w-5 h-5 text-amber-500 hidden" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3L2 20h20L12 3z"/>
+                        </svg>
+                    `;
+                } else {
+                    newWeight.className = 'weight weight-1 pan-weight-1 weight-enter cursor-pointer';
+                    newWeight.textContent = '1';
+                }
+
+                // Klik untuk menghapus beban dari piringan
+                newWeight.addEventListener('click', function() {
+                    newWeight.remove();
+                    updateScale();
+                });
+
+                pan.appendChild(newWeight);
+                updateScale();
+            }
+
+            // Drop Zone Events (Mouse)
+            [leftPan, rightPan].forEach(pan => {
+                pan.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    pan.classList.add('highlight');
+                });
+
+                pan.addEventListener('dragleave', function() {
+                    pan.classList.remove('highlight');
+                });
+
+                pan.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    pan.classList.remove('highlight');
+                    const weightType = e.dataTransfer.getData('text/plain');
+                    if (weightType) {
+                        addWeightToPan(pan, weightType);
+                    }
+                });
+            });
+
+            // Reset Timbangan
+            resetButton.addEventListener('click', resetScale);
+
+            function resetScale() {
+                leftPan.innerHTML = '';
+                rightPan.innerHTML = '';
+                updateScale();
+            }
+
+            // Hitung Kemiringan Timbangan (Bug matematika diperbaiki!)
+            function updateScale() {
+                const leftWeights = Array.from(leftPan.children);
+                const rightWeights = Array.from(rightPan.children);
+
+                const leftXCount = leftWeights.filter(w => w.dataset.weight === 'x').length;
+                const left1Count = leftWeights.filter(w => w.dataset.weight === '1').length;
+                const rightXCount = rightWeights.filter(w => w.dataset.weight === 'x').length;
+                const right1Count = rightWeights.filter(w => w.dataset.weight === '1').length;
+
+                const currentAnswer = questions[currentQuestionIndex].answer;
+                const leftValue = (leftXCount * currentAnswer) + left1Count;
+                const rightValue = (rightXCount * currentAnswer) + right1Count;
+                const difference = leftValue - rightValue;
+
+                let angle = 0;
+                if (difference === 0) {
+                    angle = 0;
+                    balanceStatus.className = "px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all";
+                    balanceStatus.querySelector('span:first-child').className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                    balanceText.textContent = "Seimbang";
+                } else {
+                    const maxTilt = 14;
+                    const tiltAngle = Math.sign(difference) * Math.min(Math.abs(difference) * 2.8, maxTilt);
+                    angle = -tiltAngle; // Kiri lebih berat -> berputar berlawanan jarum jam (negatif)
+
+                    balanceStatus.className = "px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all";
+                    balanceStatus.querySelector('span:first-child').className = "w-2 h-2 rounded-full bg-amber-500";
+                    balanceText.textContent = difference > 0 ? "Berat di Kiri" : "Berat di Kanan";
+                }
+
+                beam.style.transform = `rotate(${angle}deg)`;
+                // Counter-rotate piringan agar posisi wadah tetap horizontal realistis
+                leftPanHolder.style.transform = `rotate(${-angle}deg)`;
+                rightPanHolder.style.transform = `rotate(${-angle}deg)`;
+            }
+
+            // --- 7. KEYPAD & KEYBOARD SUPPORT ---
+            keypadBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (answerInput.value.length < 4) {
+                        answerInput.value += this.dataset.number;
+                    }
+                });
+            });
+
+            clearBtn.addEventListener('click', function() {
+                answerInput.value = '';
+            });
+
+            backspaceBtn.addEventListener('click', function() {
+                answerInput.value = answerInput.value.slice(0, -1);
+            });
+
+            // Dukungan keyboard fisik
+            document.addEventListener('keydown', function(e) {
+                if (e.key >= '0' && e.key <= '9') {
+                    if (answerInput.value.length < 4) {
+                        answerInput.value += e.key;
+                    }
+                } else if (e.key === 'Backspace') {
+                    answerInput.value = answerInput.value.slice(0, -1);
+                } else if (e.key === 'Escape' || e.key.toLowerCase() === 'c') {
+                    answerInput.value = '';
+                } else if (e.key === 'Enter') {
+                    checkUserAnswer();
+                }
+            });
+
+            // --- 8. FULLSCREEN TOGGLE ---
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const iconExpand = document.getElementById('icon-expand');
+            const iconCompress = document.getElementById('icon-compress');
+
+            fullscreenBtn.addEventListener('click', function() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                } else if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                }
+            });
+
+            document.addEventListener('fullscreenchange', function() {
+                if (document.fullscreenElement) {
+                    iconExpand.classList.add('hidden');
+                    iconCompress.classList.remove('hidden');
+                } else {
+                    iconExpand.classList.remove('hidden');
+                    iconCompress.classList.add('hidden');
+                }
+            });
+
+            // --- 9. EFEK KONFETI RINGAN ---
+            const confettiCanvas = document.getElementById('confetti-canvas');
+            const ctx = confettiCanvas.getContext('2d');
+            let confettiParticles = [];
+
+            function resizeCanvas() {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            function launchConfetti() {
+                const colors = ['#10b981', '#3b82f6', '#f59e0b', '#6366f1', '#ec4899'];
+                for (let i = 0; i < 65; i++) {
+                    confettiParticles.push({
+                        x: window.innerWidth / 2,
+                        y: window.innerHeight / 2,
+                        vx: (Math.random() - 0.5) * 14,
+                        vy: (Math.random() - 0.7) * 14,
+                        size: Math.random() * 7 + 4,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        rotation: Math.random() * 360,
+                        vRot: (Math.random() - 0.5) * 10,
+                        alpha: 1
+                    });
+                }
+                if (confettiParticles.length <= 65) {
+                    animateConfetti();
+                }
+            }
+
+            function animateConfetti() {
+                ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                confettiParticles.forEach((p, idx) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.35; // gravitasi
+                    p.rotation += p.vRot;
+                    p.alpha -= 0.014;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.globalAlpha = Math.max(0, p.alpha);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                    ctx.restore();
+
+                    if (p.alpha <= 0) {
+                        confettiParticles.splice(idx, 1);
+                    }
+                });
+
+                if (confettiParticles.length > 0) {
+                    requestAnimationFrame(animateConfetti);
+                }
+            }
+
+            // Inisialisasi awal
+            displayQuestion();
+        });
+    </script>
+</body>
+</html>
